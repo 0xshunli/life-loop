@@ -40,11 +40,14 @@ export const useGameStore = defineStore('game', {
 
   getters: {
     lifeStage(state) {
-      if (state.age < 6) return { key: 'baby', label: '婴儿期', color: 'pink' }
-      if (state.age < 18) return { key: 'child', label: '少年期', color: 'blue' }
-      if (state.age < 40) return { key: 'youth', label: '青年期', color: 'emerald' }
-      if (state.age < 60) return { key: 'middle', label: '中年期', color: 'amber' }
-      return { key: 'elder', label: '老年期', color: 'purple' }
+      if (state.age < 3) return { key: 'infant', label: '婴儿期', color: 'pink', icon: '👶' }
+      if (state.age < 6) return { key: 'toddler', label: '幼儿期', color: 'pink', icon: '💒' }
+      if (state.age < 12) return { key: 'child', label: '童年', color: 'sky', icon: '💒' }
+      if (state.age < 18) return { key: 'teen', label: '少年期', color: 'blue', icon: '🧑' }
+      if (state.age < 30) return { key: 'youth', label: '青年期', color: 'emerald', icon: '💪' }
+      if (state.age < 50) return { key: 'prime', label: '壮年期', color: 'amber', icon: '🏆' }
+      if (state.age < 65) return { key: 'middle', label: '中年期', color: 'orange', icon: '🍁' }
+      return { key: 'elder', label: '老年期', color: 'purple', icon: '🌅' }
     },
     yearMonth(state) { return `${state.age}岁 · ${state.month}月` },
     seasonLabel(state) {
@@ -55,6 +58,9 @@ export const useGameStore = defineStore('game', {
       return { name: '冬', icon: '❄️', color: '#93c5fd' }
     },
     ageAvatar(state) {
+      // 优先使用玩家自选头像
+      if (state.character.avatar) return state.character.avatar
+      // 否则根据性别和年龄自动推断
       const g = state.character.gender, a = state.age
       if (g === '女') {
         if (a < 3) return '👶'; if (a < 10) return '👧'; if (a < 20) return '👩'
@@ -99,15 +105,25 @@ export const useGameStore = defineStore('game', {
     initGame(character, world) {
       this.character = { ...character }
       this.world = { ...world }
-      this.age = 18; this.month = 1; this.totalMonths = 0
-      this.attributes = {
-        health: 70 + Math.floor(Math.random() * 20 - 10),
-        intelligence: 50 + Math.floor(Math.random() * 20 - 10),
-        charisma: 50 + Math.floor(Math.random() * 20 - 10),
-        wealth: 30 + Math.floor(Math.random() * 20 - 10),
-        happiness: 60 + Math.floor(Math.random() * 20 - 10),
-        social: 40 + Math.floor(Math.random() * 20 - 10),
+      this.age = character.startAge ?? 0; this.month = 1; this.totalMonths = 0
+      // Scale initial attributes by starting age
+      const age = this.age
+      const r = () => Math.floor(Math.random() * 16 - 8)
+      if (age < 6) {
+        // Baby/toddler: high health & happiness, low everything else
+        this.attributes = { health: 85 + r(), intelligence: 15 + r(), charisma: 30 + r(), wealth: 0, happiness: 80 + r(), social: 10 + r() }
+      } else if (age < 18) {
+        // Child/teen: growing stats
+        this.attributes = { health: 80 + r(), intelligence: 35 + r(), charisma: 40 + r(), wealth: 10 + r(), happiness: 70 + r(), social: 35 + r() }
+      } else if (age < 40) {
+        // Young adult: balanced
+        this.attributes = { health: 70 + r(), intelligence: 50 + r(), charisma: 50 + r(), wealth: 30 + r(), happiness: 60 + r(), social: 45 + r() }
+      } else {
+        // Middle-aged+: experienced
+        this.attributes = { health: 55 + r(), intelligence: 60 + r(), charisma: 55 + r(), wealth: 50 + r(), happiness: 50 + r(), social: 50 + r() }
       }
+      // Clamp all to 0-100
+      for (const k of Object.keys(this.attributes)) this.attributes[k] = Math.max(0, Math.min(100, this.attributes[k]))
       this.relationships = []; this.memories = []; this.recentEvents = []
       this.currentNarrative = ''; this.currentOptions = []; this.currentMood = '期待'
       this.timeline = []; this.milestones = []; this.attributeHistory = []; this.moodHistory = []
@@ -142,8 +158,18 @@ export const useGameStore = defineStore('game', {
     },
 
     advanceTime() {
-      this.month++; this.totalMonths++
-      if (this.month > 12) { this.month = 1; this.age++ }
+      // Time advances faster for younger characters
+      let monthsToAdd = 1
+      if (this.age < 3) monthsToAdd = 6        // 婴儿期：每回合半年
+      else if (this.age < 6) monthsToAdd = 4    // 幼儿期：每回合4个月
+      else if (this.age < 12) monthsToAdd = 3   // 童年：每回合3个月
+      else if (this.age < 18) monthsToAdd = 2   // 少年期：每回合2个月
+      // 18岁以后每回合1个月
+
+      for (let i = 0; i < monthsToAdd; i++) {
+        this.month++; this.totalMonths++
+        if (this.month > 12) { this.month = 1; this.age++ }
+      }
     },
 
     addMemory(event) {
@@ -166,7 +192,14 @@ export const useGameStore = defineStore('game', {
 2. 根据角色性格和当前处境合理推进，不要突兀转折
 3. 保持世界观和人物性格一致性
 4. 属性每次变化 -15 到 +15，重大事件可更大
-5. 根据人生阶段调整（青年：求学/恋爱/求职，中年：事业/家庭/危机，老年：健康/传承/回忆）
+5. 根据人生阶段调整叙事风格：
+   - 婴幼儿(0-3岁)：以第三人称旁白讲述，从父母视角描写婴儿成长（啼哭、第一次笑、学走路、说第一个字），时间跨度可大些
+   - 幼儿(3-6岁)：幼儿园、家庭互动、对世界的好奇探索，简短的童言童语对话
+   - 童年(6-12岁)：小学生活、友谊、家庭、梦想萌芽，孩子视角的纯真叙事
+   - 少年(12-18岁)：中学、叛逆期、初恋、自我意识觉醒、升学压力
+   - 青年(18-30岁)：求学/恋爱/求职/独立、社会认知冲击
+   - 壮年(30-50岁)：事业/家庭/子女教育/社会责任/中年危机
+   - 中老年(50+)：健康/退休/传承/回忆/人生智慧
 6. 制造戏剧张力：伏笔、冲突、温情、意外，让玩家想继续
 7. 3个选项要有实质差异，体现不同价值观和风险
 8. 适时引入NPC，让关系网自然生长
@@ -211,7 +244,7 @@ ${this.location ? `所在地：${this.location}` : ''}
 ## 已达成里程碑：${milestoneList}
 
 ## 近期经历
-${recentMemory || '刚刚开始新的人生旅程'}
+${recentMemory || (this.age === 0 ? '一个新生命刚刚来到这个世界，发出了第一声啼哭' : this.age < 6 ? `${this.character.name}是一个${this.age}岁的孩子，世界在TA眼中充满新奇` : this.age < 18 ? `${this.character.name}正处于${this.age}岁的少年时期` : '刚刚开始新的人生旅程')}
 
 ## 重要记忆
 ${importantMemory || '尚无重要记忆'}

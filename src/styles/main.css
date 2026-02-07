@@ -252,6 +252,12 @@
 }
 .animate-breathe { animation: breathe 5s ease-in-out infinite; }
 
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float { animation: float 4s ease-in-out infinite; }
+
 @keyframes glow-pulse {
   0%, 100% {
     box-shadow: 0 0 8px rgba(16, 185, 129, 0.15), 0 4px 16px rgba(16, 185, 129, 0.1);

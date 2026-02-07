@@ -57,10 +57,75 @@
                 </button>
               </div>
             </div>
+            <div>
+              <label class="text-xs text-gray-500 mb-2 block">起始年龄</label>
+              <div class="flex items-center gap-3">
+                <div class="flex-1">
+                  <input type="range" v-model.number="form.startAge" min="0" max="60" step="1" class="w-full accent-emerald-500" />
+                  <div class="flex justify-between text-[9px] text-dark-600 mt-1">
+                    <span>出生</span><span>少年</span><span>青年</span><span>中年</span>
+                  </div>
+                </div>
+                <div class="w-16 shrink-0 text-center">
+                  <input v-model.number="form.startAge" type="number" min="0" max="80" class="input-field text-center text-lg font-bold !px-2 !py-1.5" />
+                  <p class="text-[9px] text-dark-600 mt-0.5">岁</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-2">
+                <button v-for="preset in agePresets" :key="preset.age" @click="form.startAge = preset.age"
+                  :class="['px-2.5 py-1 rounded-lg text-[11px] border transition-all duration-200',
+                    form.startAge === preset.age
+                      ? 'border-emerald-500/40 bg-emerald-500/[0.08] text-emerald-400'
+                      : 'border-white/[0.05] bg-white/[0.02] text-gray-500 hover:bg-white/[0.04]']">
+                  {{ preset.icon }} {{ preset.label }}
+                </button>
+              </div>
+            </div>
           </div>
 
-          <!-- Step 2 -->
+          <!-- Step 2: Avatar -->
           <div v-else-if="step === 1" key="s1">
+            <label class="text-xs text-gray-500 mb-1.5 block">选择一个代表你的头像</label>
+            <p class="text-[10px] text-dark-600 mb-4">这将成为你在人生旅程中的形象标识</p>
+
+            <!-- Category tabs -->
+            <div class="flex gap-1 mb-4 overflow-x-auto pb-1 scrollbar-none">
+              <button v-for="(cat, ci) in avatarCategories" :key="ci" @click="selectedCategory = ci"
+                :class="['flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] border whitespace-nowrap transition-all duration-200 shrink-0',
+                  selectedCategory === ci
+                    ? 'border-emerald-500/40 bg-emerald-500/[0.08] text-emerald-400'
+                    : 'border-white/[0.05] bg-white/[0.02] text-gray-500 hover:bg-white/[0.04]']">
+                <span>{{ cat.icon }}</span> {{ cat.label }}
+              </button>
+            </div>
+
+            <!-- Avatar grid -->
+            <div class="grid grid-cols-5 sm:grid-cols-7 gap-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
+              <button v-for="a in avatarCategories[selectedCategory].avatars" :key="a + selectedCategory" @click="form.avatar = a"
+                :class="['relative w-full aspect-square rounded-xl flex items-center justify-center text-2xl sm:text-3xl border transition-all duration-200 group',
+                  form.avatar === a
+                    ? 'border-emerald-500/50 bg-emerald-500/[0.12] shadow-lg shadow-emerald-500/15 scale-105 ring-2 ring-emerald-500/30'
+                    : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/[0.12] hover:scale-105']">
+                <span class="transition-transform duration-200 group-hover:scale-110">{{ a }}</span>
+                <div v-if="form.avatar === a" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-[8px] text-white flex items-center justify-center font-bold shadow-md">✓</div>
+              </button>
+            </div>
+
+            <!-- Selected preview -->
+            <div class="mt-4 flex items-center gap-3 min-h-[40px]">
+              <template v-if="form.avatar">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/[0.08] border border-emerald-500/20 flex items-center justify-center text-2xl">{{ form.avatar }}</div>
+                <div>
+                  <p class="text-xs text-emerald-400">已选择头像</p>
+                  <p class="text-[10px] text-dark-600">你可以随时回到这一步更换</p>
+                </div>
+              </template>
+              <p v-else class="text-[10px] text-dark-600 italic">请从上方选择一个头像</p>
+            </div>
+          </div>
+
+          <!-- Step 3: Personality -->
+          <div v-else-if="step === 2" key="s2">
             <label class="text-xs text-gray-500 mb-1.5 block">性格特征</label>
             <p class="text-[10px] text-dark-600 mb-4">选择 3 个最能代表角色的特质</p>
             <div class="grid grid-cols-3 gap-2">
@@ -87,8 +152,8 @@
             </div>
           </div>
 
-          <!-- Step 3 -->
-          <div v-else-if="step === 2" key="s2">
+          <!-- Step 4: Backstory -->
+          <div v-else-if="step === 3" key="s4">
             <label class="text-xs text-gray-500 mb-2 block">背景故事</label>
             <textarea v-model="form.backstory" class="input-field h-48 resize-none leading-relaxed"
               placeholder="写一段角色的背景故事...&#10;&#10;例如：出生在一个普通家庭，从小对世界充满好奇，梦想有一天能看到更大的天空……" maxlength="500" />
@@ -107,16 +172,16 @@
             </div>
           </div>
 
-          <!-- Step 4: Confirm -->
-          <div v-else key="s3">
+          <!-- Step 5: Confirm -->
+          <div v-else key="s5">
             <div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
               <div class="flex items-center gap-4 mb-4">
                 <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500/15 to-teal-500/15 border border-emerald-500/15 flex items-center justify-center text-2xl">
-                  {{ form.gender === '男' ? '👨' : form.gender === '女' ? '👩' : '🧑' }}
+                  {{ previewAvatar }}
                 </div>
                 <div>
                   <h3 class="font-bold text-lg">{{ form.name }}</h3>
-                  <p class="text-[11px] text-gray-500">{{ form.gender }} · 18岁</p>
+                  <p class="text-[11px] text-gray-500">{{ form.gender }} · {{ form.startAge }}岁起步 · {{ ageStageName(form.startAge) }}</p>
                 </div>
               </div>
               <div class="flex flex-wrap gap-1.5 mb-4">
@@ -136,7 +201,7 @@
         <div class="flex justify-between mt-8">
           <button v-if="step > 0" @click="step--" class="btn-secondary text-sm py-2.5">← 上一步</button>
           <div v-else></div>
-          <button v-if="step < 3" @click="nextStep" class="btn-primary text-sm py-2.5" :disabled="!canNext">下一步 →</button>
+          <button v-if="step < 4" @click="nextStep" class="btn-primary text-sm py-2.5" :disabled="!canNext">下一步 →</button>
           <button v-else @click="confirmCreate" class="btn-primary text-sm py-2.5 animate-glow">选择世界 →</button>
         </div>
       </div>
@@ -150,12 +215,12 @@
           <div class="text-center mb-5">
             <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-white/[0.06] flex items-center justify-center text-4xl mb-3 transition-all duration-300"
               :class="form.name ? 'opacity-100' : 'opacity-30'">
-              {{ form.gender === '男' ? '👨' : form.gender === '女' ? '👩' : form.name ? '🧑' : '❓' }}
+              {{ previewAvatar }}
             </div>
             <h3 class="font-bold text-base transition-all" :class="form.name ? 'text-gray-200' : 'text-dark-600'">
               {{ form.name || '未命名' }}
             </h3>
-            <p class="text-[11px] text-gray-600 mt-0.5">{{ form.gender || '?' }} · 18岁</p>
+            <p class="text-[11px] text-gray-600 mt-0.5">{{ form.gender || '?' }} · {{ form.startAge }}岁 · {{ ageStageName(form.startAge) }}</p>
           </div>
 
           <!-- Traits -->
@@ -202,7 +267,7 @@ import aiService from '../services/ai'
 const router = useRouter()
 const store = useGameStore()
 const step = ref(0)
-const steps = ['基本信息', '性格特征', '背景故事', '确认创建']
+const steps = ['基本信息', '选择头像', '性格特征', '背景故事', '确认创建']
 const isGenerating = ref(false)
 
 const genders = [
@@ -217,21 +282,53 @@ const traits = [
   '正义感强', '随波逐流',
 ]
 
-const form = ref({ name: '', gender: '', personality: [], backstory: '' })
+const avatarCategories = [
+  {
+    label: '经典人物', icon: '👤',
+    avatars: ['👶', '👦', '👧', '👨', '👩', '🧑', '👴', '👵', '🧒', '👱', '👱‍♀️', '🧔', '👨‍🦱', '👩‍🦱', '👨‍🦰', '👩‍🦰', '👨‍🦳', '👩‍🦳', '🧑‍🦱', '🧑‍🦰']
+  },
+  {
+    label: '职业身份', icon: '💼',
+    avatars: ['👨‍💼', '👩‍💼', '👨‍🔬', '👩‍🔬', '👨‍🎨', '👩‍🎨', '👨‍🚀', '👩‍🚀', '👨‍🍳', '👩‍🍳', '👨‍✈️', '👩‍✈️', '👨‍⚕️', '👩‍⚕️', '👨‍🏫', '👩‍🏫', '👨‍🌾', '👩‍🌾', '🕵️', '🕵️‍♀️']
+  },
+  {
+    label: '奇幻角色', icon: '🧙',
+    avatars: ['🧙', '🧙‍♀️', '🧝', '🧝‍♀️', '🧛', '🧛‍♀️', '🧜', '🧜‍♀️', '🧚', '🧚‍♀️', '🦸', '🦸‍♀️', '🦹', '🦹‍♀️', '🥷', '👸', '🤴', '🤖', '👻', '👽']
+  },
+  {
+    label: '动物精灵', icon: '🐾',
+    avatars: ['🐱', '🐶', '🦊', '🐺', '🐻', '🐼', '🐨', '🦁', '🐯', '🐸', '🐉', '🦅', '🦋', '🐧', '🐬', '🦄', '🐙', '🦎', '🐝', '🦉']
+  },
+  {
+    label: '符号标志', icon: '🎭',
+    avatars: ['🎭', '👑', '⭐', '🌙', '🔥', '💎', '🌸', '🍀', '🌊', '⚡', '🎪', '🎯', '🏆', '💫', '🌈', '🎵', '🗡️', '🛡️', '🔮', '💀']
+  },
+]
+const selectedCategory = ref(0)
+
+const agePresets = [
+  { age: 0, label: '出生', icon: '👶' },
+  { age: 6, label: '童年', icon: '💒' },
+  { age: 18, label: '成年', icon: '🎓' },
+  { age: 30, label: '而立', icon: '💼' },
+]
+const form = ref({ name: '', gender: '', personality: [], backstory: '', startAge: 0, avatar: '' })
 
 const canNext = computed(() => {
   if (step.value === 0) return form.value.name.trim() && form.value.gender
-  if (step.value === 1) return form.value.personality.length === 3
-  if (step.value === 2) return form.value.backstory.trim().length >= 10
+  if (step.value === 1) return !!form.value.avatar
+  if (step.value === 2) return form.value.personality.length === 3
+  if (step.value === 3) return form.value.backstory.trim().length >= 10
   return true
 })
 
 const completeness = computed(() => {
   let c = 0
-  if (form.value.name.trim()) c += 25
-  if (form.value.gender) c += 25
-  if (form.value.personality.length === 3) c += 25
-  if (form.value.backstory.trim().length >= 10) c += 25
+  if (form.value.name.trim()) c += 20
+  if (form.value.gender) c += 20
+  if (form.value.avatar) c += 20
+  if (form.value.personality.length === 3) c += 20
+  if (form.value.backstory.trim().length >= 10) c += 20
   return c
 })
 
@@ -258,6 +355,31 @@ async function generateBackstory() {
     form.value.backstory = `${form.value.name}出生在一个普通家庭，从小对世界充满好奇。`
   } finally { isGenerating.value = false }
 }
+
+function ageStageName(age) {
+  if (age < 3) return '婴儿期'
+  if (age < 6) return '幼儿期'
+  if (age < 12) return '童年'
+  if (age < 18) return '少年期'
+  if (age < 30) return '青年期'
+  if (age < 50) return '壮年期'
+  if (age < 65) return '中年期'
+  return '老年期'
+}
+
+const previewAvatar = computed(() => {
+  // 优先使用玩家选择的自定义头像
+  if (form.value.avatar) return form.value.avatar
+  // 否则根据性别和年龄自动推断
+  const g = form.value.gender, a = form.value.startAge
+  if (!g && !form.value.name) return '❓'
+  if (g === '女') {
+    if (a < 3) return '👶'; if (a < 10) return '👧'; if (a < 20) return '👩'
+    if (a < 35) return '💁‍♀️'; if (a < 50) return '👩‍💼'; if (a < 65) return '👩‍🦰'; return '👵'
+  }
+  if (a < 3) return '👶'; if (a < 10) return '👦'; if (a < 20) return '👨'
+  if (a < 35) return '🙋‍♂️'; if (a < 50) return '👨‍💼'; if (a < 65) return '🧔'; return '👴'
+})
 
 function confirmCreate() {
   store.character = { ...form.value }
