@@ -1,11 +1,12 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center p-4 sm:p-6 relative overflow-hidden bg-dark-950">
+  <div class="min-h-screen flex items-center justify-center p-4 sm:p-6 relative overflow-hidden"
+    style="background: radial-gradient(ellipse at 70% 80%, hsla(155, 50%, 18%, 0.10) 0%, transparent 50%), linear-gradient(160deg, hsl(210, 50%, 12%) 0%, hsl(195, 40%, 10%) 35%, hsl(230, 45%, 13%) 65%, hsl(215, 50%, 9%) 100%);">
     <!-- Background -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-1/4 left-1/3 w-[500px] h-[500px] rounded-full blur-[160px] animate-breathe"
-        style="background: radial-gradient(circle, rgba(16,185,129,0.06), transparent 70%); animation-duration: 10s;" />
-      <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full blur-[140px] animate-breathe"
-        style="background: radial-gradient(circle, rgba(6,182,212,0.05), transparent 70%); animation-delay: 3s; animation-duration: 12s;" />
+      <div class="absolute top-1/4 -left-10 w-[600px] h-[600px] rounded-full blur-[120px] animate-breathe"
+        style="background: radial-gradient(circle, rgba(16,185,129,0.16), rgba(52,211,153,0.04) 50%, transparent 65%); animation-duration: 8s;" />
+      <div class="absolute -bottom-10 right-1/4 w-[500px] h-[500px] rounded-full blur-[100px] animate-breathe"
+        style="background: radial-gradient(circle, rgba(6,182,212,0.12), rgba(99,102,241,0.04) 50%, transparent 65%); animation-delay: 3s; animation-duration: 12s;" />
     </div>
 
     <!-- Two-column layout on lg -->

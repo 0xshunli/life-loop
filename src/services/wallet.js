@@ -139,9 +139,9 @@ function shortAddress(addr) {
  */
 function getSaveKey() {
   if (state.address) {
-    return `ailife_save_${state.address}`
+    return `lifeprocess_save_${state.address}`
   }
-  return 'ailife_save'
+  return 'lifeprocess_save'
 }
 
 /**
@@ -151,10 +151,10 @@ function listSaves() {
   const saves = []
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)
-    if (key && key.startsWith('ailife_save_0x')) {
+    if (key && key.startsWith('lifeprocess_save_0x')) {
       try {
         const data = JSON.parse(localStorage.getItem(key))
-        const addr = key.replace('ailife_save_', '')
+        const addr = key.replace('lifeprocess_save_', '')
         saves.push({
           key,
           address: addr,

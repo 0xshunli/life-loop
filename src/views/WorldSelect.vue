@@ -1,9 +1,11 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center p-4 sm:p-6 relative overflow-hidden transition-colors duration-1000" :class="bgClass">
+  <div class="min-h-screen flex items-center justify-center p-4 sm:p-6 relative overflow-hidden transition-all duration-[1500ms]" :style="bgStyle">
     <!-- Ambient -->
     <div class="absolute inset-0 pointer-events-none overflow-hidden">
-      <div class="absolute top-1/3 left-1/3 w-[600px] h-[600px] rounded-full blur-[180px] transition-all duration-1000 animate-breathe"
-        :style="{ background: glowColor, animationDuration: '12s' }" />
+      <div class="absolute -top-20 -left-10 w-[650px] h-[650px] rounded-full blur-[120px] transition-all duration-[1500ms] animate-breathe"
+        :style="{ background: glowColor, animationDuration: '9s' }" />
+      <div class="absolute -bottom-20 -right-10 w-[550px] h-[550px] rounded-full blur-[100px] transition-all duration-[1500ms] animate-breathe"
+        :style="{ background: glowColor2, animationDelay: '4s', animationDuration: '13s' }" />
     </div>
 
     <!-- Stars for scifi/fantasy -->
@@ -157,19 +159,30 @@ const worlds = [
   },
 ]
 
-const bgClass = computed(() => {
+const bgStyle = computed(() => {
   const map = {
-    modern: 'bg-[#050d1a]', ancient: 'bg-[#0a0700]',
-    fantasy: 'bg-[#060318]', scifi: 'bg-[#020f0f]',
+    modern:  'radial-gradient(ellipse at 25% 15%, hsla(215,60%,22%,0.12) 0%, transparent 50%), linear-gradient(160deg, hsl(215,55%,13%) 0%, hsl(205,50%,10%) 35%, hsl(225,45%,12%) 65%, hsl(220,50%,8%) 100%)',
+    ancient: 'radial-gradient(ellipse at 70% 20%, hsla(35,55%,22%,0.10) 0%, transparent 50%), linear-gradient(160deg, hsl(28,45%,12%) 0%, hsl(20,40%,10%) 35%, hsl(35,35%,11%) 65%, hsl(25,40%,7%) 100%)',
+    fantasy: 'radial-gradient(ellipse at 40% 30%, hsla(270,55%,25%,0.12) 0%, transparent 50%), linear-gradient(160deg, hsl(268,50%,13%) 0%, hsl(280,45%,11%) 35%, hsl(300,40%,12%) 65%, hsl(265,45%,8%) 100%)',
+    scifi:   'radial-gradient(ellipse at 60% 25%, hsla(185,55%,20%,0.10) 0%, transparent 50%), linear-gradient(160deg, hsl(185,55%,12%) 0%, hsl(175,50%,10%) 35%, hsl(195,45%,11%) 65%, hsl(180,50%,7%) 100%)',
   }
-  return map[selectedWorld.value] || 'bg-dark-950'
+  return { background: map[selectedWorld.value] || 'linear-gradient(160deg, hsl(220,45%,12%) 0%, hsl(230,40%,9%) 100%)' }
 })
 const glowColor = computed(() => {
   const map = {
-    modern: 'radial-gradient(circle, rgba(59,130,246,0.06), transparent 70%)',
-    ancient: 'radial-gradient(circle, rgba(217,119,6,0.06), transparent 70%)',
-    fantasy: 'radial-gradient(circle, rgba(139,92,246,0.06), transparent 70%)',
-    scifi: 'radial-gradient(circle, rgba(6,182,212,0.06), transparent 70%)',
+    modern:  'radial-gradient(circle, rgba(59,130,246,0.18), rgba(99,102,241,0.05) 50%, transparent 65%)',
+    ancient: 'radial-gradient(circle, rgba(217,119,6,0.18), rgba(245,158,11,0.05) 50%, transparent 65%)',
+    fantasy: 'radial-gradient(circle, rgba(139,92,246,0.18), rgba(236,72,153,0.05) 50%, transparent 65%)',
+    scifi:   'radial-gradient(circle, rgba(6,182,212,0.18), rgba(16,185,129,0.05) 50%, transparent 65%)',
+  }
+  return map[selectedWorld.value] || 'transparent'
+})
+const glowColor2 = computed(() => {
+  const map = {
+    modern:  'radial-gradient(circle, rgba(99,102,241,0.12), transparent 65%)',
+    ancient: 'radial-gradient(circle, rgba(239,68,68,0.10), transparent 65%)',
+    fantasy: 'radial-gradient(circle, rgba(236,72,153,0.12), transparent 65%)',
+    scifi:   'radial-gradient(circle, rgba(16,185,129,0.10), transparent 65%)',
   }
   return map[selectedWorld.value] || 'transparent'
 })

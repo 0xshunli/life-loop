@@ -1,10 +1,10 @@
 <template>
   <div class="h-screen flex flex-col overflow-hidden relative transition-all duration-[2000ms]" :style="dynamicBgStyle">
-    <!-- Ambient orbs (dynamic) -->
+    <!-- Ambient orbs (dynamic, large & vivid) -->
     <div class="absolute inset-0 pointer-events-none overflow-hidden">
-      <div class="absolute -top-32 left-1/4 w-[500px] h-[500px] rounded-full blur-[160px] animate-breathe transition-all duration-[2000ms]" :style="{ background: dynamicOrb1, animationDuration: '10s' }" />
-      <div class="absolute -bottom-32 right-1/4 w-[400px] h-[400px] rounded-full blur-[140px] animate-breathe transition-all duration-[2000ms]" :style="{ background: dynamicOrb2, animationDelay: '4s', animationDuration: '14s' }" />
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[200px] animate-breathe transition-all duration-[2000ms]" :style="{ background: dynamicOrb3, animationDelay: '2s', animationDuration: '16s' }" />
+      <div class="absolute -top-20 -left-10 w-[700px] h-[700px] rounded-full blur-[120px] animate-breathe transition-all duration-[2500ms]" :style="{ background: dynamicOrb1, animationDuration: '8s' }" />
+      <div class="absolute -bottom-20 -right-10 w-[600px] h-[600px] rounded-full blur-[100px] animate-breathe transition-all duration-[2500ms]" :style="{ background: dynamicOrb2, animationDelay: '3s', animationDuration: '12s' }" />
+      <div class="absolute top-1/3 right-1/3 w-[500px] h-[500px] rounded-full blur-[140px] animate-breathe transition-all duration-[2500ms]" :style="{ background: dynamicOrb3, animationDelay: '6s', animationDuration: '15s' }" />
     </div>
 
     <!-- Vignette overlay -->
@@ -499,83 +499,86 @@ const worldEmoji = computed(() => ({ modern: '🏙️', ancient: '🏯', fantasy
 const themeColor = computed(() => ({ modern: '#3b82f6', ancient: '#d97706', fantasy: '#8b5cf6', scifi: '#06b6d4' })[store.world.setting] || '#10b981')
 
 // ═══ Dynamic Scene System ═══
-// Blends: world base + scene type + weather + season + mood → unique bg every turn
+// Blends: world base + scene type + weather + season + mood
+// Each scene has distinct rich colors — no more monochrome
 const sceneColorPalette = {
-  // Scene type accent colors [primary, secondary]
-  work:      { h: 215, s: 50, l: 14, accent: 'rgba(59,130,246,0.06)' },
-  love:      { h: 340, s: 45, l: 14, accent: 'rgba(236,72,153,0.07)' },
-  study:     { h: 235, s: 40, l: 13, accent: 'rgba(99,102,241,0.06)' },
-  adventure: { h: 35,  s: 50, l: 13, accent: 'rgba(245,158,11,0.07)' },
-  family:    { h: 155, s: 35, l: 12, accent: 'rgba(16,185,129,0.06)' },
-  health:    { h: 0,   s: 30, l: 12, accent: 'rgba(239,68,68,0.05)' },
-  social:    { h: 25,  s: 45, l: 13, accent: 'rgba(251,146,60,0.06)' },
-  crisis:    { h: 0,   s: 55, l: 10, accent: 'rgba(239,68,68,0.08)' },
-  leisure:   { h: 260, s: 20, l: 10, accent: 'rgba(148,163,184,0.04)' },
-  milestone: { h: 45,  s: 55, l: 14, accent: 'rgba(251,191,36,0.07)' },
+  work:      { h: 215, s: 65, l: 22, accent: 'rgba(59,130,246,0.18)',  accent2: 'rgba(99,102,241,0.10)' },
+  love:      { h: 340, s: 60, l: 22, accent: 'rgba(244,114,182,0.20)', accent2: 'rgba(251,113,133,0.12)' },
+  study:     { h: 245, s: 55, l: 20, accent: 'rgba(129,140,248,0.16)', accent2: 'rgba(99,102,241,0.10)' },
+  adventure: { h: 35,  s: 70, l: 22, accent: 'rgba(251,191,36,0.18)',  accent2: 'rgba(245,158,11,0.12)' },
+  family:    { h: 155, s: 50, l: 20, accent: 'rgba(52,211,153,0.16)',  accent2: 'rgba(16,185,129,0.10)' },
+  health:    { h: 5,   s: 50, l: 18, accent: 'rgba(248,113,113,0.16)', accent2: 'rgba(239,68,68,0.10)' },
+  social:    { h: 25,  s: 65, l: 22, accent: 'rgba(251,146,60,0.18)',  accent2: 'rgba(249,115,22,0.12)' },
+  crisis:    { h: 0,   s: 70, l: 16, accent: 'rgba(239,68,68,0.22)',   accent2: 'rgba(185,28,28,0.14)' },
+  leisure:   { h: 260, s: 35, l: 18, accent: 'rgba(167,139,250,0.12)', accent2: 'rgba(148,163,184,0.08)' },
+  milestone: { h: 45,  s: 75, l: 24, accent: 'rgba(251,191,36,0.22)',  accent2: 'rgba(245,158,11,0.14)' },
 }
 const worldBaseHSL = {
-  modern:  { h: 215, s: 55, l: 8 },
-  ancient: { h: 30,  s: 40, l: 7 },
-  fantasy: { h: 270, s: 45, l: 8 },
-  scifi:   { h: 180, s: 50, l: 7 },
+  modern:  { h: 220, s: 60, l: 14 },
+  ancient: { h: 28,  s: 50, l: 13 },
+  fantasy: { h: 268, s: 55, l: 14 },
+  scifi:   { h: 185, s: 60, l: 13 },
 }
 const seasonShift = computed(() => {
   const s = store.seasonLabel.name
-  if (s === '春') return { h: -10, s: 5, l: 1 }   // Warmer, slightly brighter
-  if (s === '夏') return { h: -5, s: 10, l: 2 }   // Warm, vivid
-  if (s === '秋') return { h: 15, s: 5, l: 0 }    // Orange shift
-  return { h: 5, s: -5, l: -1 }                     // Cool, muted
+  if (s === '春') return { h: -15, s: 10, l: 3 }
+  if (s === '夏') return { h: -8,  s: 15, l: 4 }
+  if (s === '秋') return { h: 20,  s: 8,  l: 1 }
+  return { h: 8, s: -5, l: -2 }
 })
 const weatherShift = computed(() => {
   const w = currentWeather.value
-  if (w === '晴') return { h: -5, s: 10, l: 3 }
-  if (w === '阴') return { h: 0, s: -15, l: -2 }
-  if (w === '雨') return { h: 10, s: -10, l: -3 }
-  if (w === '雪') return { h: 20, s: -15, l: 2 }
-  if (w === '风') return { h: 5, s: 5, l: 0 }
-  if (w === '雾') return { h: 0, s: -20, l: -1 }
+  if (w === '晴') return { h: -5, s: 15, l: 5 }
+  if (w === '阴') return { h: 0, s: -12, l: -3 }
+  if (w === '雨') return { h: 12, s: -8, l: -4 }
+  if (w === '雪') return { h: 25, s: -10, l: 4 }
+  if (w === '风') return { h: 5, s: 8, l: 1 }
+  if (w === '雾') return { h: 0, s: -18, l: 0 }
   return { h: 0, s: 0, l: 0 }
 })
 const moodShift = computed(() => {
   const m = store.currentMood
-  if (isMoodPos(m)) return { h: -5, s: 8, l: 1 }
-  if (isMoodNeg(m)) return { h: 5, s: -5, l: -2 }
+  if (isMoodPos(m)) return { h: -8, s: 12, l: 3 }
+  if (isMoodNeg(m)) return { h: 8, s: -8, l: -3 }
   return { h: 0, s: 0, l: 0 }
 })
 
-// Blend all factors into final HSL
 const blendedHSL = computed(() => {
-  const base = worldBaseHSL[store.world.setting] || { h: 220, s: 30, l: 8 }
+  const base = worldBaseHSL[store.world.setting] || { h: 220, s: 40, l: 14 }
   const scene = sceneColorPalette[currentSceneType.value] || sceneColorPalette.leisure
   const ss = seasonShift.value, ws = weatherShift.value, ms = moodShift.value
-
-  // 60% world base + 40% scene type, then apply shifts
-  const h = Math.round(base.h * 0.6 + scene.h * 0.4 + ss.h + ws.h + ms.h) % 360
-  const s = Math.max(0, Math.min(100, Math.round(base.s * 0.6 + scene.s * 0.4 + ss.s + ws.s + ms.s)))
-  const l = Math.max(3, Math.min(20, Math.round(base.l * 0.6 + scene.l * 0.4 + ss.l + ws.l + ms.l)))
+  // 45% world + 55% scene — scene dominates for visual variety
+  const h = Math.round(base.h * 0.45 + scene.h * 0.55 + ss.h + ws.h + ms.h) % 360
+  const s = Math.max(15, Math.min(100, Math.round(base.s * 0.45 + scene.s * 0.55 + ss.s + ws.s + ms.s)))
+  const l = Math.max(8, Math.min(32, Math.round(base.l * 0.45 + scene.l * 0.55 + ss.l + ws.l + ms.l)))
   return { h: h < 0 ? h + 360 : h, s, l }
 })
 
+// Multi-stop gradient with more color variation + radial accent overlay
 const dynamicBgStyle = computed(() => {
   const { h, s, l } = blendedHSL.value
-  const c1 = `hsl(${h}, ${s}%, ${Math.max(l - 3, 2)}%)`
-  const c2 = `hsl(${(h + 15) % 360}, ${Math.max(s - 10, 5)}%, ${l}%)`
-  const c3 = `hsl(${(h + 30) % 360}, ${Math.max(s - 15, 5)}%, ${Math.max(l - 2, 2)}%)`
-  const c4 = `hsl(${h}, ${Math.max(s - 5, 5)}%, ${Math.max(l - 4, 2)}%)`
-  return { background: `linear-gradient(160deg, ${c1} 0%, ${c2} 35%, ${c3} 65%, ${c4} 100%)` }
+  const c1 = `hsl(${h}, ${s}%, ${l}%)`
+  const c2 = `hsl(${(h + 20) % 360}, ${Math.max(s - 5, 15)}%, ${Math.max(l - 4, 6)}%)`
+  const c3 = `hsl(${(h + 40) % 360}, ${Math.max(s + 5, 20)}%, ${Math.max(l + 2, 10)}%)`
+  const c4 = `hsl(${(h - 10 + 360) % 360}, ${Math.max(s - 10, 10)}%, ${Math.max(l - 6, 5)}%)`
+  const accentH = (h + 180) % 360
+  const radial = `radial-gradient(ellipse at 30% 20%, hsla(${accentH}, ${Math.min(s + 20, 80)}%, ${l + 10}%, 0.08) 0%, transparent 60%)`
+  const linear = `linear-gradient(160deg, ${c1} 0%, ${c2} 30%, ${c3} 60%, ${c4} 100%)`
+  return { background: `${radial}, ${linear}` }
 })
 
 const dynamicOrb1 = computed(() => {
   const scene = sceneColorPalette[currentSceneType.value] || sceneColorPalette.leisure
-  return `radial-gradient(circle, ${scene.accent}, transparent 70%)`
+  return `radial-gradient(circle, ${scene.accent}, transparent 65%)`
 })
 const dynamicOrb2 = computed(() => {
+  const scene = sceneColorPalette[currentSceneType.value] || sceneColorPalette.leisure
   const { h, s } = blendedHSL.value
-  return `radial-gradient(circle, hsla(${(h + 60) % 360}, ${s}%, 50%, 0.04), transparent 70%)`
+  return `radial-gradient(circle, ${scene.accent2}, hsla(${(h + 90) % 360}, ${s}%, 45%, 0.06) 40%, transparent 70%)`
 })
 const dynamicOrb3 = computed(() => {
-  const { h, s } = blendedHSL.value
-  return `radial-gradient(circle, hsla(${(h + 120) % 360}, ${Math.max(s - 10, 10)}%, 40%, 0.025), transparent 70%)`
+  const { h, s, l } = blendedHSL.value
+  return `radial-gradient(circle, hsla(${(h + 150) % 360}, ${Math.min(s + 15, 80)}%, ${l + 15}%, 0.07), transparent 65%)`
 })
 
 // Mood helpers

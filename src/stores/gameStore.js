@@ -159,7 +159,7 @@ export const useGameStore = defineStore('game', {
     },
 
     buildSystemPrompt() {
-      return `你是「AI Life」模拟人生游戏的叙事引擎。你要为玩家创造身临其境的人生故事。
+      return `你是「人生进程」模拟人生游戏的叙事引擎。你要为玩家创造身临其境的人生故事。
 
 ## 核心规则
 1. 叙事200-500字，要有画面感、对话、内心独白，像文学作品

@@ -1,5 +1,6 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-dark-950">
+  <div class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
+    style="background: radial-gradient(ellipse at 30% 20%, hsla(168, 60%, 18%, 0.12) 0%, transparent 50%), linear-gradient(160deg, hsl(220, 50%, 12%) 0%, hsl(200, 45%, 10%) 35%, hsl(250, 40%, 12%) 65%, hsl(210, 50%, 8%) 100%);">
     <!-- Starfield -->
     <div class="starfield">
       <div
@@ -16,14 +17,16 @@
 
     <!-- Large ambient orbs -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute -top-32 left-1/4 w-[600px] h-[600px] rounded-full blur-[180px] opacity-40 animate-breathe"
-        style="background: radial-gradient(circle, rgba(16,185,129,0.12), transparent 70%); animation-duration: 10s;" />
-      <div class="absolute -bottom-48 right-1/4 w-[500px] h-[500px] rounded-full blur-[160px] opacity-30 animate-breathe"
-        style="background: radial-gradient(circle, rgba(6,182,212,0.1), transparent 70%); animation-delay: 4s; animation-duration: 12s;" />
+      <div class="absolute -top-20 -left-10 w-[700px] h-[700px] rounded-full blur-[120px] animate-breathe"
+        style="background: radial-gradient(circle, rgba(16,185,129,0.18), rgba(6,182,212,0.06) 50%, transparent 70%); animation-duration: 8s;" />
+      <div class="absolute -bottom-32 -right-10 w-[600px] h-[600px] rounded-full blur-[100px] animate-breathe"
+        style="background: radial-gradient(circle, rgba(99,102,241,0.14), rgba(139,92,246,0.06) 50%, transparent 70%); animation-delay: 3s; animation-duration: 12s;" />
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[140px] animate-breathe"
+        style="background: radial-gradient(circle, rgba(6,182,212,0.10), transparent 65%); animation-delay: 5s; animation-duration: 14s;" />
     </div>
 
     <!-- Subtle grid -->
-    <div class="absolute inset-0 opacity-[0.02]"
+    <div class="absolute inset-0 opacity-[0.03]"
       style="background-image: linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px); background-size: 60px 60px;" />
 
     <!-- Wallet Connection (top-right) -->
@@ -66,9 +69,9 @@
       </div>
 
       <!-- Title -->
-      <h1 class="text-7xl sm:text-[5.5rem] font-black tracking-[0.15em] mb-4 select-none leading-none">
+      <h1 class="text-6xl sm:text-7xl font-black tracking-[0.08em] mb-4 select-none leading-none">
         <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent animate-gradient" style="background-size: 200% 200%;">
-          AI LIFE
+          人生进程
         </span>
       </h1>
       <div class="h-px w-40 mx-auto bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent mb-5"></div>
@@ -128,7 +131,7 @@
         连接钱包后，存档将绑定你的链上身份
       </p>
 
-      <p class="text-dark-700 text-[10px] mt-12 tracking-wider font-mono">v0.1.0 · DeepSeek AI</p>
+      <p class="text-dark-700 text-[10px] mt-12 tracking-wider font-mono">v0.1.0 · 人生进程 · DeepSeek AI</p>
     </div>
   </div>
 </template>
