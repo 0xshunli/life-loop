@@ -34,7 +34,7 @@
         <!-- Game Settings -->
         <section class="mb-6">
           <p class="text-[10px] text-dark-500 uppercase tracking-[0.2em] mb-3">🎮 游戏设置</p>
-          <div class="space-y-3">
+          <div class="space-y-4">
             <div>
               <label class="text-[11px] text-gray-500 mb-1.5 block">文字速度</label>
               <div class="flex items-center gap-3">
@@ -46,9 +46,36 @@
               </div>
             </div>
             <div class="flex items-center justify-between">
-              <label class="text-[11px] text-gray-500">自动保存</label>
+              <div>
+                <label class="text-[11px] text-gray-500 block">打字机效果</label>
+                <p class="text-[9px] text-dark-600">逐字显示叙事文本</p>
+              </div>
+              <button @click="enableTypewriter = !enableTypewriter"
+                class="w-10 h-5 rounded-full transition-colors duration-200 relative shrink-0"
+                :class="enableTypewriter ? 'bg-emerald-500' : 'bg-dark-700'">
+                <div class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200"
+                  :class="enableTypewriter ? 'left-[22px]' : 'left-0.5'"></div>
+              </button>
+            </div>
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="text-[11px] text-gray-500 block">环境粒子</label>
+                <p class="text-[9px] text-dark-600">世界主题浮动粒子效果</p>
+              </div>
+              <button @click="enableParticles = !enableParticles"
+                class="w-10 h-5 rounded-full transition-colors duration-200 relative shrink-0"
+                :class="enableParticles ? 'bg-emerald-500' : 'bg-dark-700'">
+                <div class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200"
+                  :class="enableParticles ? 'left-[22px]' : 'left-0.5'"></div>
+              </button>
+            </div>
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="text-[11px] text-gray-500 block">自动保存</label>
+                <p class="text-[9px] text-dark-600">每回合自动保存进度</p>
+              </div>
               <button @click="autoSave = !autoSave"
-                class="w-10 h-5 rounded-full transition-colors duration-200 relative"
+                class="w-10 h-5 rounded-full transition-colors duration-200 relative shrink-0"
                 :class="autoSave ? 'bg-emerald-500' : 'bg-dark-700'">
                 <div class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200"
                   :class="autoSave ? 'left-[22px]' : 'left-0.5'"></div>
@@ -57,12 +84,13 @@
           </div>
         </section>
 
-        <!-- Info -->
+        <!-- Shortcuts -->
         <section class="mb-6">
-          <p class="text-[10px] text-dark-500 uppercase tracking-[0.2em] mb-3">ℹ️ 快捷键</p>
+          <p class="text-[10px] text-dark-500 uppercase tracking-[0.2em] mb-3">⌨️ 快捷键</p>
           <div class="space-y-1.5 text-[11px] text-gray-500">
             <div class="flex justify-between"><span>选择选项 1/2/3</span><span class="font-mono text-dark-400">1 2 3</span></div>
             <div class="flex justify-between"><span>打开设置</span><span class="font-mono text-dark-400">Esc</span></div>
+            <div class="flex justify-between"><span>人生总览</span><span class="font-mono text-dark-400">Tab</span></div>
           </div>
         </section>
 
@@ -77,34 +105,42 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useGameStore } from '../stores/gameStore'
 import aiService from '../services/ai'
 
 const props = defineProps({ show: Boolean })
 const emit = defineEmits(['close'])
-
 const store = useGameStore()
 
 const apiUrl = ref('')
 const apiKey = ref('')
 const model = ref('')
-const textSpeed = ref(30)
+const textSpeed = ref(25)
 const autoSave = ref(true)
+const enableTypewriter = ref(true)
+const enableParticles = ref(true)
 const showKey = ref(false)
 
-onMounted(() => {
-  apiUrl.value = aiService.apiUrl
-  apiKey.value = aiService.apiKey
-  model.value = aiService.model
-  textSpeed.value = store.settings.textSpeed || 30
-  autoSave.value = store.settings.autoSave !== false
+// Sync on open
+watch(() => props.show, (v) => {
+  if (v) {
+    apiUrl.value = aiService.apiUrl
+    apiKey.value = aiService.apiKey
+    model.value = aiService.model
+    textSpeed.value = store.settings.textSpeed || 25
+    autoSave.value = store.settings.autoSave !== false
+    enableTypewriter.value = store.settings.enableTypewriter !== false
+    enableParticles.value = store.settings.enableParticles !== false
+  }
 })
 
 function save() {
   aiService.updateConfig({ apiUrl: apiUrl.value, apiKey: apiKey.value, model: model.value })
   store.settings.textSpeed = textSpeed.value
   store.settings.autoSave = autoSave.value
+  store.settings.enableTypewriter = enableTypewriter.value
+  store.settings.enableParticles = enableParticles.value
   emit('close')
 }
 </script>

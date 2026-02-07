@@ -137,7 +137,7 @@
 }
 
 /* ============================================
-   WORLD SCENE BACKGROUNDS
+   WORLD SCENE BACKGROUNDS (fallback only)
    ============================================ */
 .scene-modern {
   background: linear-gradient(160deg, #020617 0%, #0c1929 40%, #0a1a3a 70%, #020617 100%);
@@ -150,6 +150,14 @@
 }
 .scene-scifi {
   background: linear-gradient(160deg, #020617 0%, #041a1a 40%, #062828 70%, #020617 100%);
+}
+
+/* ============================================
+   SCENE TRANSITION VIGNETTE
+   ============================================ */
+.scene-vignette {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.4) 100%);
 }
 
 /* ============================================
