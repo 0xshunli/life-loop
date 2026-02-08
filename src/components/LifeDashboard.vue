@@ -3,7 +3,7 @@
     <div v-if="show" class="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4" @click.self="$emit('close')">
       <div class="glass-card p-6 max-w-lg w-full shadow-2xl border border-white/[0.08] max-h-[85vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-6">
-          <h3 class="text-lg font-bold text-gray-200 flex items-center gap-2">📊 人生总览</h3>
+          <h3 class="text-lg font-bold text-gray-200 flex items-center gap-2">{{ t('dashboard.title') }}</h3>
           <button @click="$emit('close')" class="btn-ghost p-1 text-gray-500 text-sm">✕</button>
         </div>
 
@@ -11,33 +11,33 @@
         <div class="grid grid-cols-3 gap-3 mb-6">
           <div class="rounded-xl bg-white/[0.02] border border-white/[0.05] p-3 text-center">
             <div class="text-2xl font-bold font-mono text-emerald-400">{{ store.age }}</div>
-            <div class="text-[9px] text-dark-500 uppercase tracking-wider mt-0.5">年龄</div>
+            <div class="text-[9px] text-dark-500 uppercase tracking-wider mt-0.5">{{ t('dashboard.age') }}</div>
           </div>
           <div class="rounded-xl bg-white/[0.02] border border-white/[0.05] p-3 text-center">
             <div class="text-2xl font-bold font-mono text-blue-400">{{ store.totalMonths }}</div>
-            <div class="text-[9px] text-dark-500 uppercase tracking-wider mt-0.5">经历月份</div>
+            <div class="text-[9px] text-dark-500 uppercase tracking-wider mt-0.5">{{ t('dashboard.months') }}</div>
           </div>
           <div class="rounded-xl bg-white/[0.02] border border-white/[0.05] p-3 text-center">
             <div class="text-2xl font-bold font-mono text-amber-400">{{ store.lifeScore }}</div>
-            <div class="text-[9px] text-dark-500 uppercase tracking-wider mt-0.5">综合评分</div>
+            <div class="text-[9px] text-dark-500 uppercase tracking-wider mt-0.5">{{ t('dashboard.score') }}</div>
           </div>
           <div class="rounded-xl bg-white/[0.02] border border-white/[0.05] p-3 text-center">
             <div class="text-2xl font-bold font-mono text-purple-400">{{ store.milestones.length }}</div>
-            <div class="text-[9px] text-dark-500 uppercase tracking-wider mt-0.5">里程碑</div>
+            <div class="text-[9px] text-dark-500 uppercase tracking-wider mt-0.5">{{ t('dashboard.milestones') }}</div>
           </div>
           <div class="rounded-xl bg-white/[0.02] border border-white/[0.05] p-3 text-center">
             <div class="text-2xl font-bold font-mono text-rose-400">{{ store.relationships.length }}</div>
-            <div class="text-[9px] text-dark-500 uppercase tracking-wider mt-0.5">人际关系</div>
+            <div class="text-[9px] text-dark-500 uppercase tracking-wider mt-0.5">{{ t('dashboard.relations') }}</div>
           </div>
           <div class="rounded-xl bg-white/[0.02] border border-white/[0.05] p-3 text-center">
             <div class="text-2xl font-bold font-mono text-cyan-400">{{ store.lifeStats.totalChoices }}</div>
-            <div class="text-[9px] text-dark-500 uppercase tracking-wider mt-0.5">抉择次数</div>
+            <div class="text-[9px] text-dark-500 uppercase tracking-wider mt-0.5">{{ t('dashboard.choices') }}</div>
           </div>
         </div>
 
         <!-- Attribute Trend Charts -->
         <section class="mb-6">
-          <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">📈 属性趋势</p>
+          <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">{{ t('dashboard.attrTrend') }}</p>
           <div class="space-y-3">
             <div v-for="attr in store.attributeList" :key="attr.key" class="group">
               <div class="flex items-center justify-between mb-1">
@@ -72,7 +72,7 @@
 
         <!-- Life Events Distribution -->
         <section class="mb-6">
-          <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">⚖️ 事件分布</p>
+          <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">{{ t('dashboard.eventDist') }}</p>
           <div class="flex items-center gap-3">
             <div class="flex-1">
               <div class="h-3 bg-dark-800 rounded-full overflow-hidden flex">
@@ -87,14 +87,14 @@
             </div>
           </div>
           <div class="flex justify-between text-[9px] text-dark-600 mt-1">
-            <span>😊 积极事件</span>
-            <span>😢 消极事件</span>
+            <span>{{ t('dashboard.positive') }}</span>
+            <span>{{ t('dashboard.negative') }}</span>
           </div>
         </section>
 
         <!-- Mood History -->
         <section class="mb-6">
-          <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">🎭 情绪轨迹</p>
+          <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">{{ t('dashboard.moodTrack') }}</p>
           <div class="flex flex-wrap gap-1">
             <span v-for="(m, i) in recentMoods" :key="i"
               class="px-1.5 py-0.5 rounded text-[9px] border"
@@ -102,12 +102,12 @@
               {{ m.mood }}
             </span>
           </div>
-          <p class="text-[10px] text-dark-500 mt-2">主导情绪：<span class="text-gray-400">{{ store.dominantMood }}</span></p>
+          <p class="text-[10px] text-dark-500 mt-2">{{ t('dashboard.dominantMood') }}: <span class="text-gray-400">{{ store.dominantMood }}</span></p>
         </section>
 
         <!-- Key Milestones -->
         <section v-if="store.milestones.length" class="mb-4">
-          <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">🏆 成就</p>
+          <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">{{ t('dashboard.achieveLabel') }}</p>
           <div class="grid grid-cols-2 gap-2">
             <div v-for="(m, i) in store.milestones" :key="i"
               class="flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/[0.03] border border-amber-500/10">
@@ -120,7 +120,7 @@
           </div>
         </section>
 
-        <button @click="$emit('close')" class="btn-secondary w-full text-sm py-2.5 mt-2">关闭</button>
+        <button @click="$emit('close')" class="btn-secondary w-full text-sm py-2.5 mt-2">{{ t('nav.close') }}</button>
       </div>
     </div>
   </transition>
@@ -129,6 +129,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useGameStore } from '../stores/gameStore'
+import { t } from '../i18n'
 
 defineProps({ show: Boolean })
 defineEmits(['close'])

@@ -50,7 +50,7 @@
           <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        {{ isConnecting ? '连接中...' : '连接钱包' }}
+        {{ isConnecting ? t('start.connecting') : t('start.connectWallet') }}
       </button>
     </div>
 
@@ -75,7 +75,7 @@
         </span>
       </h1>
       <div class="h-px w-40 mx-auto bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent mb-5"></div>
-      <p class="text-gray-500 text-sm sm:text-base tracking-[0.3em] font-light mb-5">每一次人生都是独一无二的</p>
+      <p class="text-gray-500 text-sm sm:text-base tracking-[0.3em] font-light mb-5">{{ t('app.subtitle') }}</p>
 
       <!-- Feature pills -->
       <div class="flex items-center justify-center gap-2 mb-10 flex-wrap">
@@ -84,20 +84,32 @@
         </span>
       </div>
 
-      <!-- Save preview -->
+      <!-- Save Slots -->
       <transition name="slide-up">
-        <div v-if="walletState.connected && saveInfo" class="glass-card p-4 mb-6 text-left border-gradient">
-          <div class="flex items-center gap-2 mb-2.5">
+        <div v-if="saveSlots.some(s => !s.empty)" class="mb-6 space-y-2">
+          <div class="flex items-center gap-2 mb-2">
             <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
-            <span class="text-[9px] text-gray-500 uppercase tracking-[0.15em]">已有存档</span>
+            <span class="text-[9px] text-gray-500 uppercase tracking-[0.15em]">{{ t('start.saves') }}</span>
           </div>
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="font-bold text-gray-200">{{ saveInfo.characterName }}</p>
-              <p class="text-xs text-gray-500 mt-0.5">{{ saveInfo.world }} · {{ saveInfo.age }}岁</p>
-            </div>
-            <div class="text-right">
-              <p class="text-[10px] font-mono text-dark-400">{{ shortAddr }}</p>
+          <div v-for="slot in saveSlots.filter(s => !s.empty)" :key="slot.slotId"
+            class="glass-card p-3 text-left border-gradient group hover:border-white/[0.12] transition-all cursor-pointer"
+            @click="loadSlot(slot.slotId)">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl bg-white/[0.03] border border-white/[0.06]">
+                  {{ slot.avatar || '👤' }}
+                </div>
+                <div>
+                  <p class="font-bold text-gray-200 text-sm group-hover:text-emerald-300 transition-colors">{{ slot.name }}</p>
+                  <p class="text-[10px] text-gray-500">{{ slot.world }} · {{ slot.age }} · {{ t('start.score') }} {{ slot.lifeScore }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-[9px] text-dark-600 font-mono">{{ t('start.slot') }}{{ slot.slotId + 1 }}</span>
+                <button @click.stop="deleteSlot(slot.slotId)" class="opacity-0 group-hover:opacity-100 text-rose-400/50 hover:text-rose-400 transition-all p-1" title="删除存档">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -114,24 +126,37 @@
       <div class="space-y-3">
         <button @click="$router.push('/create')" class="btn-primary text-lg px-10 py-4 w-full max-w-[280px] mx-auto block animate-glow group">
           <span class="flex items-center justify-center gap-2">
-            开始新人生
+            {{ t('start.newGame') }}
             <svg class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
           </span>
         </button>
-        <button v-if="hasSave" @click="continueGame" class="btn-secondary text-base px-10 py-3.5 w-full max-w-[280px] mx-auto block group">
+        <button v-if="hasSave || saveSlots.some(s => !s.empty)" @click="continueGame" class="btn-secondary text-base px-10 py-3.5 w-full max-w-[280px] mx-auto block group">
           <span class="flex items-center justify-center gap-2">
             <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-            继续上次的故事
+            {{ t('start.continueGame') }}
           </span>
         </button>
       </div>
 
+      <!-- Achievements Button -->
+      <div class="mt-6">
+        <button @click="showAchievements = true" class="glass-card-hover px-4 py-2.5 mx-auto flex items-center gap-2 text-[12px] text-gray-500 hover:text-amber-400 transition-colors">
+          {{ t('start.achievements') }}
+          <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400/70 font-mono border border-amber-500/20">
+            {{ achievementProgress.unlocked }}/{{ achievementProgress.total }}
+          </span>
+        </button>
+      </div>
+
+      <!-- Achievement Panel -->
+      <AchievementPanel :show="showAchievements" @close="showAchievements = false" />
+
       <!-- Footer hint -->
       <p v-if="!walletState.connected && walletAvailable" class="text-[11px] text-dark-600 mt-10">
-        连接钱包后，存档将绑定你的链上身份
+        {{ t('start.walletHint') }}
       </p>
 
-      <p class="text-dark-700 text-[10px] mt-12 tracking-wider font-mono">v0.1.0 · 人生进程 · DeepSeek AI</p>
+      <p class="text-dark-700 text-[10px] mt-12 tracking-wider font-mono">{{ t('app.version') }} · DeepSeek AI</p>
     </div>
   </div>
 </template>
@@ -141,19 +166,24 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../stores/gameStore'
 import wallet from '../services/wallet'
+import AchievementPanel from '../components/AchievementPanel.vue'
+import { t } from '../i18n'
 
 const router = useRouter()
 const store = useGameStore()
 const walletState = wallet.state
 const isConnecting = ref(false)
 const walletError = ref('')
+const showAchievements = ref(false)
+const achievementProgress = computed(() => store.achievementProgress)
 
 const walletAvailable = computed(() => wallet.hasProvider())
 const shortAddr = computed(() => wallet.shortAddress())
 const hasSave = computed(() => store.hasSaveData())
 const saveInfo = computed(() => store.getSaveInfo())
+const saveSlots = computed(() => store.listSaveSlots())
 
-const features = ['🤖 AI 驱动叙事', '🎭 自由选择', '🌍 多元世界', '🔗 钱包存档']
+const features = computed(() => t('start.features'))
 
 // Generate stars
 const stars = Array.from({ length: 80 }, (_, i) => ({
@@ -176,4 +206,10 @@ async function connectWallet() {
 }
 function disconnectWallet() { wallet.disconnect(); walletError.value = '' }
 function continueGame() { store.loadGame(); router.push('/game') }
+function loadSlot(slotId) { store.loadGame(null, slotId); router.push('/game') }
+function deleteSlot(slotId) {
+  if (confirm(t('start.confirmDelete', { n: slotId + 1 }))) {
+    store.deleteSave(slotId)
+  }
+}
 </script>

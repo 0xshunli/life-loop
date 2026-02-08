@@ -41,7 +41,7 @@
     <!-- Notifications -->
     <TransitionGroup name="fade" tag="div" class="fixed top-16 right-4 z-[70] space-y-2 pointer-events-none">
       <div v-for="n in notifications" :key="n.id" class="animate-slide-in px-3.5 py-2 rounded-xl text-sm font-bold shadow-xl backdrop-blur-md border"
-        :class="n.type === 'milestone' ? 'bg-amber-500/15 border-amber-500/20 text-amber-400' : n.value > 0 ? 'bg-emerald-500/15 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/15 border-rose-500/20 text-rose-400'">
+        :class="n.type === 'milestone' ? 'bg-amber-500/15 border-amber-500/20 text-amber-400' : n.type === 'random' ? 'bg-cyan-500/15 border-cyan-500/20 text-cyan-400' : n.value > 0 ? 'bg-emerald-500/15 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/15 border-rose-500/20 text-rose-400'">
         {{ n.icon }} {{ n.label }} {{ n.value !== undefined ? ((n.value > 0 ? '+' : '') + n.value) : '' }}
       </div>
     </TransitionGroup>
@@ -50,16 +50,19 @@
     <transition name="fade">
       <div v-if="showMenu" class="fixed inset-0 z-[80]" @click="showMenu = false">
         <div class="absolute right-4 top-12 w-56 glass-card p-1.5 shadow-2xl border border-white/[0.08] animate-slide-in" @click.stop>
-          <button @click="restartLife" class="w-full text-left px-3.5 py-2.5 rounded-xl text-[13px] text-gray-300 hover:bg-white/[0.06] hover:text-white transition-all flex items-center gap-2.5">🔄 重启人生</button>
-          <button @click="openDashboard" class="w-full text-left px-3.5 py-2.5 rounded-xl text-[13px] text-gray-300 hover:bg-white/[0.06] hover:text-white transition-all flex items-center gap-2.5">📊 人生总览</button>
-          <button @click="openSettings" class="w-full text-left px-3.5 py-2.5 rounded-xl text-[13px] text-gray-300 hover:bg-white/[0.06] hover:text-white transition-all flex items-center gap-2.5">⚙️ 设置</button>
-          <button @click="goHome" class="w-full text-left px-3.5 py-2.5 rounded-xl text-[13px] text-gray-300 hover:bg-white/[0.06] hover:text-white transition-all flex items-center gap-2.5">🏠 回到首页</button>
+          <button @click="restartLife" class="w-full text-left px-3.5 py-2.5 rounded-xl text-[13px] text-gray-300 hover:bg-white/[0.06] hover:text-white transition-all flex items-center gap-2.5">{{ t('game.menuRestart') }}</button>
+          <button @click="openDashboard" class="w-full text-left px-3.5 py-2.5 rounded-xl text-[13px] text-gray-300 hover:bg-white/[0.06] hover:text-white transition-all flex items-center gap-2.5">{{ t('game.menuDashboard') }}</button>
+          <button @click="showMenu = false; showSkillTree = true" class="w-full text-left px-3.5 py-2.5 rounded-xl text-[13px] text-gray-300 hover:bg-white/[0.06] hover:text-white transition-all flex items-center gap-2.5">{{ t('game.menuSkills') }}</button>
+          <button @click="showMenu = false; showAssets = true" class="w-full text-left px-3.5 py-2.5 rounded-xl text-[13px] text-gray-300 hover:bg-white/[0.06] hover:text-white transition-all flex items-center gap-2.5">{{ t('game.menuAssets') }}</button>
+          <button @click="showMenu = false; showAchievements = true" class="w-full text-left px-3.5 py-2.5 rounded-xl text-[13px] text-gray-300 hover:bg-white/[0.06] hover:text-white transition-all flex items-center gap-2.5">{{ t('game.menuAchievements') }}</button>
+          <button @click="openSettings" class="w-full text-left px-3.5 py-2.5 rounded-xl text-[13px] text-gray-300 hover:bg-white/[0.06] hover:text-white transition-all flex items-center gap-2.5">{{ t('game.menuSettings') }}</button>
+          <button @click="goHome" class="w-full text-left px-3.5 py-2.5 rounded-xl text-[13px] text-gray-300 hover:bg-white/[0.06] hover:text-white transition-all flex items-center gap-2.5">{{ t('game.menuHome') }}</button>
           <button @click="shareToTwitter('progress')" class="w-full text-left px-3.5 py-2.5 rounded-xl text-[13px] text-[#1d9bf0] hover:bg-[#1d9bf0]/[0.08] transition-all flex items-center gap-2.5">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            分享到 X
+            {{ t('game.menuShare') }}
           </button>
           <div class="h-px bg-white/[0.04] my-1"></div>
-          <button @click="showMenu = false" class="w-full text-left px-3.5 py-2 rounded-xl text-[12px] text-dark-500 hover:bg-white/[0.03] transition-all">关闭</button>
+          <button @click="showMenu = false" class="w-full text-left px-3.5 py-2 rounded-xl text-[12px] text-dark-500 hover:bg-white/[0.03] transition-all">{{ t('nav.close') }}</button>
         </div>
       </div>
     </transition>
@@ -69,11 +72,11 @@
       <div v-if="showRestartDialog" class="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4" @click.self="showRestartDialog = false">
         <div class="glass-card p-8 max-w-sm w-full text-center shadow-2xl border border-white/[0.08]">
           <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-amber-500/15 to-orange-500/15 border border-amber-500/20 flex items-center justify-center text-3xl mb-4">🔄</div>
-          <h3 class="text-lg font-bold mb-2 text-gray-200">重启人生</h3>
-          <p class="text-sm text-gray-500 mb-6">当前进度自动保存。重新创建角色，开启全新旅程。</p>
+          <h3 class="text-lg font-bold mb-2 text-gray-200">{{ t('game.restartTitle') }}</h3>
+          <p class="text-sm text-gray-500 mb-6">{{ t('game.restartDesc') }}</p>
           <div class="flex gap-3 justify-center">
-            <button @click="showRestartDialog = false" class="btn-secondary text-sm px-6 py-2.5">取消</button>
-            <button @click="confirmRestart" class="btn-primary text-sm px-6 py-2.5">确认重启</button>
+            <button @click="showRestartDialog = false" class="btn-secondary text-sm px-6 py-2.5">{{ t('nav.cancel') }}</button>
+            <button @click="confirmRestart" class="btn-primary text-sm px-6 py-2.5">{{ t('nav.confirm') }}</button>
           </div>
         </div>
       </div>
@@ -82,6 +85,10 @@
     <!-- Panels -->
     <SettingsPanel :show="showSettings" @close="showSettings = false" />
     <LifeDashboard :show="showDashboard" @close="showDashboard = false" />
+    <LifeReport :show="showLifeReport" @close="showLifeReport = false" @share="shareToTwitter('gameover')" />
+    <SkillTree :show="showSkillTree" @close="showSkillTree = false" />
+    <AchievementPanel :show="showAchievements" @close="showAchievements = false" />
+    <AssetPanel :show="showAssets" @close="showAssets = false" />
 
     <!-- ═══ Top Bar ═══ -->
     <header class="relative z-10 bg-dark-950/60 backdrop-blur-2xl border-b border-white/[0.04] px-4 sm:px-5 py-2 flex items-center justify-between shrink-0">
@@ -122,7 +129,7 @@
       <transition name="drawer">
         <aside v-show="showSidebar || !isMobile" :class="['w-72 bg-dark-950/80 backdrop-blur-2xl border-r border-white/[0.04] overflow-y-auto flex flex-col shrink-0', showSidebar ? 'fixed inset-y-0 left-0 z-50' : 'hidden lg:flex']">
           <div v-if="showSidebar" class="flex items-center justify-between p-4 border-b border-white/[0.04] lg:hidden">
-            <span class="text-xs font-bold text-gray-400">角色面板</span>
+            <span class="text-xs font-bold text-gray-400">{{ t('game.charPanel') }}</span>
             <button @click="showSidebar = false" class="btn-ghost p-1 text-xs text-gray-500">✕</button>
           </div>
           <div class="p-4 flex-1 overflow-y-auto space-y-5">
@@ -174,7 +181,7 @@
 
             <!-- Milestones -->
             <section v-if="store.milestones.length">
-              <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">🏆 人生里程碑</p>
+              <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">{{ t('game.milestones') }}</p>
               <div class="space-y-1.5">
                 <div v-for="(m, i) in store.milestones" :key="i" class="flex items-center gap-2 p-2 rounded-xl bg-amber-500/[0.03] border border-amber-500/10">
                   <span class="text-lg shrink-0">{{ m.icon }}</span>
@@ -186,9 +193,38 @@
               </div>
             </section>
 
+            <!-- Skills mini -->
+            <section v-if="store.skillList.some(s => s.level > 0)">
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em]">{{ t('game.skillsLabel') }}</p>
+                <button @click="showSkillTree = true" class="text-[9px] text-emerald-500/60 hover:text-emerald-400 transition-colors">{{ t('game.detail') }}</button>
+              </div>
+              <div class="grid grid-cols-3 gap-1.5">
+                <div v-for="sk in store.skillList" :key="sk.key" class="text-center p-1.5 rounded-lg bg-white/[0.02] border border-white/[0.03]" :title="sk.label">
+                  <div class="text-sm">{{ sk.icon }}</div>
+                  <div class="text-[8px] text-gray-600">{{ sk.label }}</div>
+                  <div class="text-[10px] font-bold font-mono" :style="{ color: sk.color }">{{ sk.level }}</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Assets mini -->
+            <section v-if="store.assets.length">
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em]">{{ t('game.assetsLabel') }} <span class="text-dark-600">({{ store.assets.length }})</span></p>
+                <button @click="showAssets = true" class="text-[9px] text-emerald-500/60 hover:text-emerald-400 transition-colors">{{ t('game.detail') }}</button>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <div v-for="a in store.assets" :key="a.id" class="px-2 py-1 rounded-lg bg-amber-500/[0.04] border border-amber-500/10 flex items-center gap-1" :title="a.name">
+                  <span class="text-sm">{{ a.icon }}</span>
+                  <span class="text-[9px] text-amber-400/70">{{ a.name }}</span>
+                </div>
+              </div>
+            </section>
+
             <!-- Attributes with sparklines -->
             <section>
-              <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">📊 属性</p>
+              <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">{{ t('game.attributes') }}</p>
               <div class="space-y-2.5">
                 <div v-for="attr in store.attributeList" :key="attr.key" class="group">
                   <div class="flex justify-between items-center mb-1">
@@ -210,13 +246,13 @@
 
             <!-- Family -->
             <section v-if="store.family.spouse || store.family.children.length">
-              <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">👨‍👩‍👧‍👦 家庭</p>
+              <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">{{ t('game.family') }}</p>
               <div class="rounded-xl border border-white/[0.05] bg-gradient-to-b from-rose-500/[0.03] to-transparent p-3 space-y-2">
                 <div v-if="store.family.spouse" class="flex items-center gap-2">
                   <span class="text-lg">💑</span>
                   <div class="flex-1 min-w-0">
                     <p class="text-[11px] font-medium text-rose-300/80">{{ store.family.spouse }}</p>
-                    <p class="text-[9px] text-dark-600">配偶</p>
+                    <p class="text-[9px] text-dark-600">{{ t('game.spouse') }}</p>
                   </div>
                 </div>
                 <div v-for="child in store.family.children" :key="child.name" class="flex items-center gap-2">
@@ -234,10 +270,10 @@
 
             <!-- Relationships -->
             <section>
-              <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">👥 关系 <span class="text-dark-600">({{ store.relationships.length }})</span></p>
+              <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-3">{{ t('game.relations') }} <span class="text-dark-600">({{ store.relationships.length }})</span></p>
               <div v-if="!store.relationships.length" class="rounded-xl border border-dashed border-white/[0.06] p-4 text-center">
                 <div class="text-2xl mb-1 opacity-30">👤</div>
-                <p class="text-[11px] text-dark-600">等待缘分到来</p>
+                <p class="text-[11px] text-dark-600">{{ t('game.awaitFate') }}</p>
               </div>
               <div v-else class="space-y-1">
                 <div v-for="rel in store.relationships" :key="rel.name" class="flex items-center gap-2 p-2 rounded-xl hover:bg-white/[0.02] transition-all group">
@@ -258,7 +294,7 @@
               </div>
               <!-- NPC Bonds -->
               <div v-if="store.npcBonds.length" class="mt-3 space-y-1">
-                <p class="text-[8px] text-dark-600 uppercase tracking-wider mb-1">NPC 关系网</p>
+                <p class="text-[8px] text-dark-600 uppercase tracking-wider mb-1">{{ t('game.npcNet') }}</p>
                 <div v-for="(bond, bi) in store.npcBonds" :key="bi" class="flex items-center gap-1.5 text-[9px] px-2 py-1 rounded-lg" :class="bond.tension > 0 ? 'bg-emerald-500/[0.04] text-emerald-400/50' : bond.tension < 0 ? 'bg-rose-500/[0.04] text-rose-400/50' : 'bg-white/[0.02] text-dark-500'">
                   <span class="font-medium text-gray-400">{{ bond.from }}</span>
                   <span>{{ bond.tension > 2 ? '💕' : bond.tension > 0 ? '🤝' : bond.tension < -2 ? '⚔️' : bond.tension < 0 ? '😤' : '↔' }}</span>
@@ -271,12 +307,12 @@
             <!-- Timeline -->
             <section>
               <div class="flex items-center justify-between mb-3">
-                <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em]">📅 时间线</p>
-                <span v-if="store.timeline.length" class="text-[9px] text-dark-600 font-mono">{{ store.timeline.length }} 回合</span>
+                <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em]">{{ t('game.timeline') }}</p>
+                <span v-if="store.timeline.length" class="text-[9px] text-dark-600 font-mono">{{ store.timeline.length }} {{ t('game.turns') }}</span>
               </div>
               <div v-if="!store.timeline.length" class="rounded-xl border border-dashed border-white/[0.06] p-4 text-center">
                 <div class="text-2xl mb-1 opacity-30">⏳</div>
-                <p class="text-[11px] text-dark-600">等待故事开始</p>
+                <p class="text-[11px] text-dark-600">{{ t('game.awaitStory') }}</p>
               </div>
               <div v-else class="relative max-h-60 overflow-y-auto pr-1 scrollbar-thin">
                 <!-- Age group headers + entries -->
@@ -288,7 +324,7 @@
                       {{ group.age }}
                     </div>
                     <div class="flex-1 h-px" :style="{ background: `linear-gradient(90deg, ${timelineAgeColor(group.age)}30, transparent)` }"></div>
-                    <span class="text-[8px] text-dark-600">{{ group.entries.length }} 事件</span>
+                    <span class="text-[8px] text-dark-600">{{ group.entries.length }} {{ t('game.events') }}</span>
                   </div>
                   <!-- Entries for this age -->
                   <div class="relative ml-3 pl-3 border-l border-white/[0.05] space-y-1 mb-1">
@@ -315,10 +351,13 @@
               </div>
             </section>
 
-            <!-- Dashboard shortcut -->
-            <button @click="showDashboard = true" class="w-full glass-card-hover p-3 text-center text-[11px] text-gray-500 flex items-center justify-center gap-2">
-              📊 查看人生总览
-            </button>
+            <!-- Dashboard shortcut buttons -->
+            <div class="grid grid-cols-2 gap-2">
+              <button @click="showDashboard = true" class="glass-card-hover p-2.5 text-center text-[10px] text-gray-500 flex items-center justify-center gap-1.5">{{ t('game.overview') }}</button>
+              <button @click="showSkillTree = true" class="glass-card-hover p-2.5 text-center text-[10px] text-gray-500 flex items-center justify-center gap-1.5">{{ t('game.skills') }}</button>
+              <button @click="showAssets = true" class="glass-card-hover p-2.5 text-center text-[10px] text-gray-500 flex items-center justify-center gap-1.5">{{ t('game.assets') }}</button>
+              <button @click="showAchievements = true" class="glass-card-hover p-2.5 text-center text-[10px] text-gray-500 flex items-center justify-center gap-1.5">{{ t('game.achievementsBtn') }}</button>
+            </div>
           </div>
         </aside>
       </transition>
@@ -331,7 +370,7 @@
             <!-- Game Over -->
             <div v-if="store.isGameOver" class="text-center py-16">
               <div class="w-24 h-24 mx-auto rounded-3xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-white/[0.06] flex items-center justify-center text-5xl mb-6 shadow-2xl">🕊️</div>
-              <h2 class="text-2xl font-bold mb-3 text-gray-200">人生落幕</h2>
+              <h2 class="text-2xl font-bold mb-3 text-gray-200">{{ t('game.gameOver') }}</h2>
               <p class="text-gray-500 mb-2">{{ store.gameOverReason }}</p>
               <p class="text-dark-500 text-sm mb-6">{{ store.character.name }} · {{ store.age }}岁 · {{ store.world.settingLabel }}</p>
 
@@ -339,19 +378,19 @@
               <div class="grid grid-cols-2 gap-3 max-w-md mx-auto mb-6">
                 <div class="glass-card p-3 text-center">
                   <p class="text-2xl font-bold font-mono text-emerald-400">{{ store.totalMonths }}</p>
-                  <p class="text-[9px] text-dark-500 uppercase tracking-wider">经历月份</p>
+                  <p class="text-[9px] text-dark-500 uppercase tracking-wider">{{ t('game.monthsLived') }}</p>
                 </div>
                 <div class="glass-card p-3 text-center">
                   <p class="text-2xl font-bold font-mono text-amber-400">{{ store.milestones.length }}</p>
-                  <p class="text-[9px] text-dark-500 uppercase tracking-wider">人生里程碑</p>
+                  <p class="text-[9px] text-dark-500 uppercase tracking-wider">{{ t('game.milestonesCount') }}</p>
                 </div>
                 <div class="glass-card p-3 text-center">
                   <p class="text-2xl font-bold font-mono text-rose-400">{{ store.relationships.length }}</p>
-                  <p class="text-[9px] text-dark-500 uppercase tracking-wider">结识之人</p>
+                  <p class="text-[9px] text-dark-500 uppercase tracking-wider">{{ t('game.peopleMet') }}</p>
                 </div>
                 <div class="glass-card p-3 text-center">
                   <p class="text-2xl font-bold font-mono text-blue-400">{{ store.lifeStats.totalChoices }}</p>
-                  <p class="text-[9px] text-dark-500 uppercase tracking-wider">人生抉择</p>
+                  <p class="text-[9px] text-dark-500 uppercase tracking-wider">{{ t('game.choicesMade') }}</p>
                 </div>
               </div>
 
@@ -366,10 +405,10 @@
               <div v-if="store.family.spouse || store.family.children.length" class="glass-card p-4 mb-6 max-w-md mx-auto text-left">
                 <p class="text-[9px] text-dark-500 uppercase tracking-[0.2em] mb-2">👨‍👩‍👧‍👦 家庭</p>
                 <div class="space-y-1.5">
-                  <p v-if="store.family.spouse" class="text-[11px] text-rose-300/70">💑 配偶：{{ store.family.spouse }}</p>
+                  <p v-if="store.family.spouse" class="text-[11px] text-rose-300/70">💑 {{ t('game.spouse') }}: {{ store.family.spouse }}</p>
                   <div v-for="child in store.family.children" :key="child.name" class="text-[11px] text-amber-300/70">
                     {{ child.gender === '女' ? '👧' : '👦' }} {{ child.name }}（{{ child.age }}岁）
-                    <span v-if="child.inheritedTraits" class="text-dark-500 text-[9px]"> · 继承: {{ child.inheritedTraits.join('、') }}</span>
+                    <span v-if="child.inheritedTraits" class="text-dark-500 text-[9px]"> · {{ t('game.inherited') }}: {{ child.inheritedTraits.join(', ') }}</span>
                   </div>
                 </div>
               </div>
@@ -384,13 +423,14 @@
                 </div>
               </div>
               <div class="flex items-center justify-center gap-3 flex-wrap">
-                <button @click="showDashboard = true" class="btn-secondary px-6">📊 详细总览</button>
+                <button @click="showLifeReport = true" class="btn-primary px-6">{{ t('game.lifeReport') }}</button>
+                <button @click="showDashboard = true" class="btn-secondary px-6">{{ t('game.detailView') }}</button>
                 <button @click="shareToTwitter('gameover')" class="px-6 py-2.5 rounded-xl text-sm font-medium bg-[#1d9bf0]/10 border border-[#1d9bf0]/20 text-[#1d9bf0] hover:bg-[#1d9bf0]/20 transition-all flex items-center gap-2">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                  分享到 X
+                  {{ t('nav.share') }}
                 </button>
-                <button @click="restartLife" class="btn-primary px-6">🔄 重启人生</button>
-                <button @click="goHome" class="btn-secondary px-6">🏠 首页</button>
+                <button @click="restartLife" class="btn-primary px-6">{{ t('game.restartLife') }}</button>
+                <button @click="goHome" class="btn-secondary px-6">{{ t('game.menuHome') }}</button>
               </div>
             </div>
 
@@ -426,8 +466,8 @@
                   </div>
                 </div>
               </div>
-              <button @click="startFirstTurn" class="btn-primary text-base px-10 py-4 animate-glow">开始第一个月 →</button>
-              <p class="text-[10px] text-dark-600 mt-4">提示：按 <span class="font-mono bg-white/[0.04] px-1.5 py-0.5 rounded">1</span> <span class="font-mono bg-white/[0.04] px-1.5 py-0.5 rounded">2</span> <span class="font-mono bg-white/[0.04] px-1.5 py-0.5 rounded">3</span> 快速选择 · <span class="font-mono bg-white/[0.04] px-1.5 py-0.5 rounded">Esc</span> 设置</p>
+              <button @click="startFirstTurn" class="btn-primary text-base px-10 py-4 animate-glow">{{ t('game.startFirst') }}</button>
+              <p class="text-[10px] text-dark-600 mt-4">{{ t('game.keyTip') }} <span class="font-mono bg-white/[0.04] px-1.5 py-0.5 rounded">1</span> <span class="font-mono bg-white/[0.04] px-1.5 py-0.5 rounded">2</span> <span class="font-mono bg-white/[0.04] px-1.5 py-0.5 rounded">3</span> {{ t('game.quickSelect') }} · <span class="font-mono bg-white/[0.04] px-1.5 py-0.5 rounded">Esc</span> {{ t('nav.settings') }}</p>
             </div>
 
             <!-- ═══ Story Flow ═══ -->
@@ -448,11 +488,11 @@
                   <template v-if="expandedEntries.has(idx)">
                     <NarrativeRenderer :text="entry.narrative" class="text-[13px] !leading-relaxed" style="--nr-size: 13px;" />
                     <p v-if="entry.choice" class="mt-2 text-[11px] text-emerald-500/50 italic">↳ {{ entry.choice }}</p>
-                    <p class="text-[10px] text-dark-600 mt-2 select-none">收起 ↑</p>
+                    <p class="text-[10px] text-dark-600 mt-2 select-none">{{ t('game.collapse') }}</p>
                   </template>
                   <template v-else>
                     <p class="text-[13px] text-gray-500 line-clamp-2">{{ entry.narrative }}</p>
-                    <p class="text-[10px] text-dark-600 mt-1 select-none">展开 ↓</p>
+                    <p class="text-[10px] text-dark-600 mt-1 select-none">{{ t('game.expand') }}</p>
                   </template>
                 </div>
               </div>
@@ -503,17 +543,35 @@
                   </div>
                 </div>
 
-                <!-- Loading indicator -->
-                <div v-if="store.isLoading" class="flex items-center gap-3 py-4 pl-[52px]">
-                  <div class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
-                    <div class="relative w-7 h-7 shrink-0">
-                      <div class="absolute inset-0 rounded-full border border-white/[0.06]"></div>
-                      <div class="absolute inset-0 rounded-full border border-transparent border-t-emerald-500/50 animate-spin"></div>
-                      <div class="absolute inset-0 flex items-center justify-center text-xs">{{ worldEmoji }}</div>
+                <!-- Loading indicator / Streaming narrative -->
+                <div v-if="store.isLoading" class="py-4">
+                  <!-- 流式叙事实时显示 -->
+                  <div v-if="store.streamingNarrative" class="mb-3 rounded-2xl overflow-hidden border border-white/[0.05]">
+                    <div class="flex items-start gap-3 px-5 py-4 bg-white/[0.02]">
+                      <div class="shrink-0 mt-0.5">
+                        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg border bg-white/[0.03] border-white/[0.06]">{{ store.ageAvatar }}</div>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <NarrativeRenderer :text="store.streamingNarrative" />
+                        <div class="flex items-center gap-2 mt-2">
+                          <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                          <span class="text-[10px] text-emerald-400/60">{{ t('game.streaming') }}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <p class="text-gray-500 text-[12px] animate-pulse-soft">{{ loadingTip }}</p>
-                      <p class="text-dark-600 text-[10px]">AI 正在构思你的故事...</p>
+                  </div>
+                  <!-- 无流式内容时显示传统加载 -->
+                  <div v-else class="flex items-center gap-3 pl-[52px]">
+                    <div class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+                      <div class="relative w-7 h-7 shrink-0">
+                        <div class="absolute inset-0 rounded-full border border-white/[0.06]"></div>
+                        <div class="absolute inset-0 rounded-full border border-transparent border-t-emerald-500/50 animate-spin"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-xs">{{ worldEmoji }}</div>
+                      </div>
+                      <div>
+                        <p class="text-gray-500 text-[12px] animate-pulse-soft">{{ loadingTip }}</p>
+                        <p class="text-dark-600 text-[10px]">{{ t('game.aiThinking') }}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -539,8 +597,8 @@
                 </button>
               </div>
               <div class="flex gap-2">
-                <input v-model="freeInput" ref="freeInputEl" class="input-field text-[13px] flex-1" placeholder="或输入你想做的任何事..." @keyup.enter="submitFreeInput" />
-                <button @click="submitFreeInput" class="btn-primary px-5 py-2 text-[13px]" :disabled="!freeInput.trim()">行动</button>
+                <input v-model="freeInput" ref="freeInputEl" class="input-field text-[13px] flex-1" :placeholder="t('game.inputPlaceholder')" @keyup.enter="submitFreeInput" />
+                <button @click="submitFreeInput" class="btn-primary px-5 py-2 text-[13px]" :disabled="!freeInput.trim()">{{ t('game.action') }}</button>
               </div>
             </div>
           </div>
@@ -555,9 +613,15 @@ import { ref, reactive, computed, nextTick, watch, onUnmounted, onMounted } from
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../stores/gameStore'
 import wallet from '../services/wallet'
+import audioService from '../services/audio'
 import SettingsPanel from '../components/SettingsPanel.vue'
 import LifeDashboard from '../components/LifeDashboard.vue'
+import LifeReport from '../components/LifeReport.vue'
+import SkillTree from '../components/SkillTree.vue'
+import AchievementPanel from '../components/AchievementPanel.vue'
+import AssetPanel from '../components/AssetPanel.vue'
 import NarrativeRenderer from '../components/NarrativeRenderer.vue'
+import { t } from '../i18n'
 
 const router = useRouter()
 const store = useGameStore()
@@ -572,7 +636,12 @@ const showMenu = ref(false)
 const showRestartDialog = ref(false)
 const showSettings = ref(false)
 const showDashboard = ref(false)
+const showLifeReport = ref(false)
+const showSkillTree = ref(false)
+const showAchievements = ref(false)
+const showAssets = ref(false)
 const isMobile = ref(false)
+const audioInited = ref(false)
 const notifications = ref([])
 const currentTitle = ref('')
 const currentSceneType = ref('leisure')
@@ -586,12 +655,7 @@ let nc = 0
 const weatherMap = { '晴': '☀️', '阴': '☁️', '雨': '🌧️', '雪': '🌨️', '风': '🌬️', '雾': '🌫️', '雷': '⛈️' }
 const weatherEmoji = computed(() => weatherMap[currentWeather.value] || '')
 
-const loadingTips = [
-  '命运的齿轮正在转动……', '人生如戏，好戏将至……', '笔墨未干，故事已起……',
-  '星辰排列，命运即将揭晓……', '下一个月会发生什么呢……', '时光流转中……',
-  '故事正在编织……', '生活总有意想不到的惊喜……', '每一个选择都在塑造你……',
-]
-const loadingTip = ref(loadingTips[0])
+const loadingTip = ref('')
 
 // --- World Particles ---
 const worldParticles = computed(() => {
@@ -972,7 +1036,7 @@ function shareToTwitter(type) {
 // --- Notifications ---
 const prevAttrs = ref({ ...store.attributes })
 watch(() => ({ ...store.attributes }), nv => {
-  const meta = { health: ['健康', '❤️'], intelligence: ['智力', '🧠'], charisma: ['魅力', '✨'], wealth: ['财富', '💰'], happiness: ['幸福', '😊'], social: ['社交', '👥'] }
+  const meta = { health: [t('attrs.health'), '❤️'], intelligence: [t('attrs.intelligence'), '🧠'], charisma: [t('attrs.charisma'), '✨'], wealth: [t('attrs.wealth'), '💰'], happiness: [t('attrs.happiness'), '😊'], social: [t('attrs.social'), '👥'] }
   for (const k of Object.keys(nv)) {
     const d = nv[k] - (prevAttrs.value[k] ?? nv[k])
     if (d !== 0 && meta[k]) { const id = ++nc; notifications.value.push({ id, label: meta[k][0], icon: meta[k][1], value: d }); setTimeout(() => { notifications.value = notifications.value.filter(n => n.id !== id) }, 2200) }
@@ -989,7 +1053,7 @@ watch(() => store.milestones.length, (nv, ov) => {
   }
 })
 
-// --- Typewriter ---
+// --- Typewriter (跳过如果流式已经显示) ---
 watch(() => store.currentNarrative, v => {
   if (!v) return
   if (typewriterTimer) clearInterval(typewriterTimer)
@@ -998,7 +1062,9 @@ watch(() => store.currentNarrative, v => {
   currentSceneType.value = latest?.sceneType || 'leisure'
   currentWeather.value = latest?.weather || ''
 
-  if (!store.settings.enableTypewriter) {
+  // 如果之前用了流式输出，直接显示完整内容（用户已经看过了）
+  const wasStreaming = store.streamingNarrative.length > 50
+  if (wasStreaming || !store.settings.enableTypewriter) {
     displayedNarrative.value = v
     isTyping.value = false
     scrollBottom()
@@ -1015,7 +1081,72 @@ watch(() => store.currentNarrative, v => {
   }, speed)
 })
 
-watch(() => store.isLoading, v => { if (v) loadingTip.value = loadingTips[Math.floor(Math.random() * loadingTips.length)] })
+watch(() => store.isLoading, v => {
+  if (v) {
+    const tips = t('game.loading')
+    loadingTip.value = tips[Math.floor(Math.random() * tips.length)]
+  }
+})
+
+// --- 音效 ---
+// 初始化音频上下文（需要用户交互后）
+function initAudio() {
+  if (audioInited.value) return
+  audioService.init()
+  audioInited.value = true
+  // 播放BGM
+  audioService.playBGM(store.world.setting, currentSceneType.value)
+}
+// 属性变化音效
+watch(() => store.lifeStats.positiveEvents, (n, o) => { if (n > (o || 0)) audioService.playNotify(true) })
+watch(() => store.lifeStats.negativeEvents, (n, o) => { if (n > (o || 0)) audioService.playNotify(false) })
+// 里程碑音效
+watch(() => store.milestones.length, (n, o) => { if (n > (o || 0)) audioService.playMilestone() })
+// 游戏结束音效 + 成就检测
+watch(() => store.isGameOver, v => {
+  if (v) {
+    audioService.playGameOver()
+    store.recordLifeComplete()
+    store.checkAchievements()
+  }
+})
+// 场景切换时更新BGM
+watch(currentSceneType, (v) => {
+  if (audioInited.value && store.isPlaying) audioService.playBGM(store.world.setting, v)
+})
+// 随机事件音效+通知
+watch(() => store.lastRandomEvent, (ev) => {
+  if (!ev) return
+  audioService.playRandomEvent()
+  const id = ++nc
+  notifications.value.push({ id, label: ev.text, icon: ev.icon, type: 'random' })
+  setTimeout(() => { notifications.value = notifications.value.filter(n => n.id !== id) }, 3500)
+})
+// NPC 主动互动通知
+watch(() => store.npcProactiveEvent, (ev) => {
+  if (!ev) return
+  const id = ++nc
+  notifications.value.push({ id, label: ev.text, icon: ev.icon, type: 'random' })
+  setTimeout(() => { notifications.value = notifications.value.filter(n => n.id !== id) }, 4000)
+})
+// 成就解锁通知
+watch(() => JSON.stringify(store.globalAchievements), (nv, ov) => {
+  if (!ov) return
+  try {
+    const newA = JSON.parse(nv), oldA = JSON.parse(ov)
+    for (const [id, ts] of Object.entries(newA)) {
+      if (!oldA[id]) {
+        const def = store.achievementList.find(a => a.id === id)
+        if (def) {
+          audioService.playMilestone()
+          const nid = ++nc
+          notifications.value.push({ id: nid, label: `🏅 成就解锁: ${def.title}`, icon: def.icon, type: 'milestone' })
+          setTimeout(() => { notifications.value = notifications.value.filter(n => n.id !== nid) }, 4500)
+        }
+      }
+    }
+  } catch {}
+})
 
 onMounted(() => {
   checkMobile(); window.addEventListener('resize', checkMobile)
@@ -1030,7 +1161,7 @@ onUnmounted(() => {
 function checkMobile() { isMobile.value = window.innerWidth < 1024 }
 
 function handleKey(e) {
-  if (showSettings.value || showRestartDialog.value || showMenu.value || showDashboard.value) return
+  if (showSettings.value || showRestartDialog.value || showMenu.value || showDashboard.value || showSkillTree.value || showAchievements.value || showAssets.value || showLifeReport.value) return
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
   if (e.key === 'Escape') { showSettings.value = true; return }
   if (e.key === 'Tab') { e.preventDefault(); showDashboard.value = true; return }
@@ -1042,7 +1173,7 @@ function handleKey(e) {
 }
 
 function scrollBottom() { nextTick(() => { if (narrativeContainer.value) narrativeContainer.value.scrollTop = narrativeContainer.value.scrollHeight }) }
-async function startFirstTurn() { await store.playTurn() }
-async function makeChoice(o) { await store.playTurn(o) }
-async function submitFreeInput() { if (!freeInput.value.trim()) return; const v = freeInput.value.trim(); freeInput.value = ''; await store.playTurn(v) }
+async function startFirstTurn() { initAudio(); audioService.playNewTurn(); await store.playTurn() }
+async function makeChoice(o) { initAudio(); audioService.playClick(); await store.playTurn(o) }
+async function submitFreeInput() { if (!freeInput.value.trim()) return; initAudio(); audioService.playClick(); const v = freeInput.value.trim(); freeInput.value = ''; await store.playTurn(v) }
 </script>

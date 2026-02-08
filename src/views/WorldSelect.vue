@@ -17,11 +17,11 @@
     <div class="relative z-10 w-full max-w-4xl">
       <!-- Header -->
       <div class="text-center mb-10">
-        <button @click="$router.push('/create')" class="btn-ghost text-gray-600 text-xs mb-6">← 返回修改角色</button>
+        <button @click="$router.push('/create')" class="btn-ghost text-gray-600 text-xs mb-6">← {{ t('world.backCreate') }}</button>
         <h2 class="text-3xl font-bold mb-2">
-          <span class="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">选择你的世界</span>
+          <span class="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">{{ t('world.title') }}</span>
         </h2>
-        <p class="text-gray-600 text-sm">每个世界都有独特的命运等待书写</p>
+        <p class="text-gray-600 text-sm">{{ t('world.subtitle') }}</p>
       </div>
 
       <!-- Character reminder -->
@@ -89,7 +89,7 @@
         <button @click="startGame" :disabled="!selectedWorld"
           class="btn-primary text-base px-12 py-4"
           :class="selectedWorld ? 'animate-glow' : ''">
-          开始人生旅程 →
+          {{ t('world.startJourney') }}
         </button>
       </div>
     </div>
@@ -100,6 +100,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../stores/gameStore'
+import { t } from '../i18n'
 
 const router = useRouter()
 const store = useGameStore()
@@ -109,11 +110,11 @@ const miniStars = Array.from({ length: 40 }, (_, i) => ({
   id: i, x: Math.random()*100, y: Math.random()*100, size: Math.random()*1.5+0.5, dur: 2+Math.random()*4, delay: Math.random()*5,
 }))
 
-const worlds = [
+const worlds = computed(() => [
   {
-    key: 'modern', label: '现代都市', icon: '🏙️',
-    description: '繁华的现代城市，机遇与挑战并存。在职场、爱情、生活中找到属于你的位置。',
-    tags: ['职场', '爱情', '社交', '科技'],
+    key: 'modern', label: t('world.modern.label'), icon: '🏙️',
+    description: t('world.modern.desc'),
+    tags: t('world.modern.tags'),
     sceneBg: 'linear-gradient(135deg, #0a1628 0%, #0f2440 50%, #162d50 100%)',
     sceneDecor: `<div style="position:absolute;bottom:0;left:10%;width:8px;height:60%;background:linear-gradient(to top,#1a365d,#2563eb33);border-radius:2px 2px 0 0;"></div>
       <div style="position:absolute;bottom:0;left:20%;width:12px;height:75%;background:linear-gradient(to top,#1e3a5f,#3b82f633);border-radius:2px 2px 0 0;"></div>
@@ -124,9 +125,9 @@ const worlds = [
     accentGradient: 'linear-gradient(90deg, #3b82f6, #06b6d4)',
   },
   {
-    key: 'ancient', label: '古代王朝', icon: '🏯',
-    description: '风云变幻的古代，朝堂争斗、江湖恩怨。入朝为官或行走江湖，命运由你书写。',
-    tags: ['权谋', '武侠', '诗词', '历史'],
+    key: 'ancient', label: t('world.ancient.label'), icon: '🏯',
+    description: t('world.ancient.desc'),
+    tags: t('world.ancient.tags'),
     sceneBg: 'linear-gradient(135deg, #1a0f00 0%, #2d1b08 50%, #3d2a12 100%)',
     sceneDecor: `<div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:30px solid transparent;border-right:30px solid transparent;border-bottom:50px solid #4a2c0a;"></div>
       <div style="position:absolute;bottom:50px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:22px solid transparent;border-right:22px solid transparent;border-bottom:35px solid #5c3a12;"></div>
@@ -135,9 +136,9 @@ const worlds = [
     accentGradient: 'linear-gradient(90deg, #d97706, #ef4444)',
   },
   {
-    key: 'fantasy', label: '奇幻大陆', icon: '🐉',
-    description: '魔法与神秘生物的世界。冒险、修炼、结交伙伴，书写属于你的史诗传奇。',
-    tags: ['魔法', '冒险', '修炼', '神兽'],
+    key: 'fantasy', label: t('world.fantasy.label'), icon: '🐉',
+    description: t('world.fantasy.desc'),
+    tags: t('world.fantasy.tags'),
     sceneBg: 'linear-gradient(135deg, #0d0628 0%, #1a0b3a 50%, #2d1557 100%)',
     sceneDecor: `<div style="position:absolute;top:15%;left:20%;width:4px;height:4px;background:#c084fc;border-radius:50%;box-shadow:0 0 8px #c084fc;"></div>
       <div style="position:absolute;top:35%;right:25%;width:3px;height:3px;background:#a78bfa;border-radius:50%;box-shadow:0 0 6px #a78bfa;"></div>
@@ -147,9 +148,9 @@ const worlds = [
     accentGradient: 'linear-gradient(90deg, #8b5cf6, #ec4899)',
   },
   {
-    key: 'scifi', label: '星际时代', icon: '🚀',
-    description: '人类走向星际的未来。太空探索、AI 共存、星际贸易，无限可能在宇宙展开。',
-    tags: ['太空', 'AI', '探索', '未来'],
+    key: 'scifi', label: t('world.scifi.label'), icon: '🚀',
+    description: t('world.scifi.desc'),
+    tags: t('world.scifi.tags'),
     sceneBg: 'linear-gradient(135deg, #021a1a 0%, #042d2d 50%, #063f3f 100%)',
     sceneDecor: `<div style="position:absolute;top:20%;left:25%;width:40px;height:1px;background:linear-gradient(90deg,transparent,#06b6d4,transparent);opacity:0.3;"></div>
       <div style="position:absolute;top:50%;right:20%;width:30px;height:1px;background:linear-gradient(90deg,transparent,#10b981,transparent);opacity:0.25;"></div>
@@ -157,7 +158,7 @@ const worlds = [
       <div style="position:absolute;bottom:35%;left:30%;width:4px;height:4px;border:1px solid #10b98140;border-radius:50%;"></div>`,
     accentGradient: 'linear-gradient(90deg, #06b6d4, #10b981)',
   },
-]
+])
 
 const bgStyle = computed(() => {
   const map = {
@@ -188,7 +189,7 @@ const glowColor2 = computed(() => {
 })
 
 function startGame() {
-  const w = worlds.find(x => x.key === selectedWorld.value)
+  const w = worlds.value.find(x => x.key === selectedWorld.value)
   if (!w) return
   store.initGame(store.character, { setting: w.key, settingLabel: w.label, description: w.description })
   router.push('/game')
