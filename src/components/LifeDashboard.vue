@@ -46,7 +46,7 @@
               </div>
               <!-- Sparkline -->
               <div class="h-8 bg-white/[0.02] rounded-lg border border-white/[0.03] overflow-hidden relative">
-                <svg class="w-full h-full" preserveAspectRatio="none">
+                <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
                   <polyline
                     :points="sparklinePoints(attr.key)"
                     fill="none"
@@ -153,14 +153,14 @@ function moodClass(mood) {
 
 function sparklinePoints(key) {
   const data = store.sparklineData(key, 30)
-  if (data.length < 2) return '0,16 100,16'
+  if (data.length < 2) return '0,50 100,50'
   const maxV = Math.max(...data, 1)
   const minV = Math.min(...data, 0)
   const range = maxV - minV || 1
   return data.map((v, i) => {
     const x = (i / (data.length - 1)) * 100
     const y = 100 - ((v - minV) / range) * 100
-    return `${x}%,${y}%`
+    return `${x},${y}`
   }).join(' ')
 }
 
@@ -173,9 +173,9 @@ function sparklineAreaPoints(key) {
   const points = data.map((v, i) => {
     const x = (i / (data.length - 1)) * 100
     const y = 100 - ((v - minV) / range) * 100
-    return `${x}%,${y}%`
+    return `${x},${y}`
   })
-  return `0%,100% ${points.join(' ')} 100%,100%`
+  return `0,100 ${points.join(' ')} 100,100`
 }
 
 function sparklineMax(key) {

@@ -349,6 +349,20 @@
 .scene-header-milestone { border-left: 2px solid rgba(251, 191, 36, 0.4); }
 
 /* ============================================
+   SCENE DECORATION ANIMATION
+   ============================================ */
+@keyframes scene-deco {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  15% { opacity: 0.15; transform: translate(calc(var(--deco-drift-x) * 0.2), calc(var(--deco-drift-y) * 0.2)) scale(0.9); }
+  50% { opacity: 0.25; transform: translate(calc(var(--deco-drift-x) * 0.6), calc(var(--deco-drift-y) * 0.6)) scale(1.05); }
+  85% { opacity: 0.12; transform: translate(var(--deco-drift-x), var(--deco-drift-y)) scale(0.9); }
+  100% { opacity: 0; transform: translate(calc(var(--deco-drift-x) * 1.1), calc(var(--deco-drift-y) * 1.1)) scale(0.6); }
+}
+.animate-scene-deco {
+  animation: scene-deco var(--deco-dur) var(--deco-delay) ease-in-out infinite;
+}
+
+/* ============================================
    LINE CLAMP UTILITIES
    ============================================ */
 .line-clamp-2 {

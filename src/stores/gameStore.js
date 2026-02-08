@@ -10,7 +10,8 @@ export const useGameStore = defineStore('game', {
     age: 18,
     month: 1,
     totalMonths: 0,
-    relationships: [],
+    relationships: [],       // [{ name, relation, affection, personality?, age?, status? }]
+    npcBonds: [],            // NPC之间的关系 [{ from, to, type, tension }]
     memories: [],
     recentEvents: [],
     currentNarrative: '',
@@ -20,6 +21,7 @@ export const useGameStore = defineStore('game', {
     milestones: [],
     career: '',
     location: '',
+    family: { spouse: null, children: [] },  // 家庭系统
     // New: tracking systems
     attributeHistory: [],   // [{ totalMonths, health, intelligence, ... }]
     moodHistory: [],        // [{ totalMonths, mood }]
@@ -124,10 +126,10 @@ export const useGameStore = defineStore('game', {
       }
       // Clamp all to 0-100
       for (const k of Object.keys(this.attributes)) this.attributes[k] = Math.max(0, Math.min(100, this.attributes[k]))
-      this.relationships = []; this.memories = []; this.recentEvents = []
+      this.relationships = []; this.npcBonds = []; this.memories = []; this.recentEvents = []
       this.currentNarrative = ''; this.currentOptions = []; this.currentMood = '期待'
       this.timeline = []; this.milestones = []; this.attributeHistory = []; this.moodHistory = []
-      this.career = ''; this.location = ''
+      this.career = ''; this.location = ''; this.family = { spouse: null, children: [] }
       this.lifeStats = { totalChoices: 0, positiveEvents: 0, negativeEvents: 0, npcMet: 0, highestAttribute: '', lowestAttribute: '' }
       this.isPlaying = true; this.isGameOver = false; this.gameOverReason = ''
       // Record initial snapshot
@@ -157,19 +159,98 @@ export const useGameStore = defineStore('game', {
       if (this.age >= 100) { this.isGameOver = true; this.gameOverReason = '走过了漫长的一生，安详地闭上了眼睛……' }
     },
 
-    advanceTime() {
-      // Time advances faster for younger characters
-      let monthsToAdd = 1
-      if (this.age < 3) monthsToAdd = 6        // 婴儿期：每回合半年
-      else if (this.age < 6) monthsToAdd = 4    // 幼儿期：每回合4个月
-      else if (this.age < 12) monthsToAdd = 3   // 童年：每回合3个月
-      else if (this.age < 18) monthsToAdd = 2   // 少年期：每回合2个月
-      // 18岁以后每回合1个月
+    advanceTime(aiTimeSkip, ageAfter) {
+      let monthsToAdd
+
+      // 优先级1：AI 指定了目标年龄 age_after
+      if (ageAfter != null && typeof ageAfter === 'number' && ageAfter > this.age) {
+        // 直接跳到目标年龄（计算需要推进多少个月）
+        const yearDiff = ageAfter - this.age
+        monthsToAdd = yearDiff * 12 - this.month + 1  // 跳到目标年龄的1月
+        if (monthsToAdd < 1) monthsToAdd = 12 * yearDiff
+        monthsToAdd = Math.min(monthsToAdd, 1200) // 上限100年
+      }
+      // 优先级2：AI 指定了 time_skip 月数
+      else if (aiTimeSkip && aiTimeSkip > 1) {
+        monthsToAdd = Math.min(Math.round(aiTimeSkip), 120)
+      }
+      // 优先级3：默认按年龄段推进
+      else {
+        monthsToAdd = 1
+        if (this.age < 3) monthsToAdd = 6
+        else if (this.age < 6) monthsToAdd = 4
+        else if (this.age < 12) monthsToAdd = 3
+        else if (this.age < 18) monthsToAdd = 2
+      }
 
       for (let i = 0; i < monthsToAdd; i++) {
         this.month++; this.totalMonths++
         if (this.month > 12) { this.month = 1; this.age++ }
       }
+    },
+
+    // 从玩家输入中智能识别年龄跳跃意图
+    parseAgeFromInput(input, currentAge) {
+      if (!input) return null
+      // 模式1："我X岁了" "到X岁" "X岁的时候" "快进到X岁"
+      const ageMatch = input.match(/(?:我|到|快进到|跳到|已经|现在)?(\d{1,3})岁/)
+      if (ageMatch) {
+        const target = parseInt(ageMatch[1])
+        if (target > currentAge && target <= 120) return target
+      }
+      // 模式2："X年后" "过了X年"
+      const yearsLater = input.match(/(\d{1,3})年(?:后|之后|以后)/)
+      if (yearsLater) {
+        const y = parseInt(yearsLater[1])
+        if (y > 0 && y <= 100) return currentAge + y
+      }
+      // 模式3：关键词推断
+      const kwMap = [
+        [/读完大学|大学毕业|毕业了/, 22],
+        [/读完高中|高中毕业/, 18],
+        [/读完初中|初中毕业/, 15],
+        [/读完小学|小学毕业/, 12],
+        [/长大成人|成年/, 18],
+        [/退休/, 60],
+        [/上小学/, 6],
+        [/上初中/, 12],
+        [/上高中/, 15],
+        [/上大学|考上大学/, 18],
+      ]
+      for (const [re, targetAge] of kwMap) {
+        if (re.test(input) && targetAge > currentAge) return targetAge
+      }
+      return null
+    },
+
+    // 基因系统：根据父母属性生成子女天赋
+    generateChildAttributes() {
+      const a = this.attributes
+      // 子女继承父母属性的40-60%加随机变异
+      const inherit = (key) => {
+        const parentVal = a[key] || 50
+        const base = parentVal * (0.4 + Math.random() * 0.2)
+        const mutation = (Math.random() - 0.5) * 30
+        return Math.max(10, Math.min(90, Math.round(base + mutation)))
+      }
+      const potential = {
+        health: inherit('health'),
+        intelligence: inherit('intelligence'),
+        charisma: inherit('charisma'),
+        wealth: 0,
+        happiness: inherit('happiness'),
+        social: inherit('social'),
+      }
+      // 从父母性格中随机继承1-2个特质
+      const parentTraits = this.character.personality || []
+      const allTraits = ['勇敢', '谨慎', '善良', '冷酷', '聪明', '天真', '幽默', '严肃', '浪漫', '务实', '叛逆', '温顺']
+      const numInherit = Math.min(parentTraits.length, 1 + Math.floor(Math.random() * 2))
+      const shuffled = [...parentTraits].sort(() => Math.random() - 0.5)
+      const inherited = shuffled.slice(0, numInherit)
+      // Add 1 random new trait
+      const newTraits = allTraits.filter(t => !inherited.includes(t))
+      if (newTraits.length) inherited.push(newTraits[Math.floor(Math.random() * newTraits.length)])
+      return { traits: inherited, potential }
     },
 
     addMemory(event) {
@@ -202,10 +283,13 @@ export const useGameStore = defineStore('game', {
    - 中老年(50+)：健康/退休/传承/回忆/人生智慧
 6. 制造戏剧张力：伏笔、冲突、温情、意外，让玩家想继续
 7. 3个选项要有实质差异，体现不同价值观和风险
-8. 适时引入NPC，让关系网自然生长
+8. 适时引入NPC，让关系网自然生长。NPC应有鲜明性格、年龄和职业
 9. 对话用「」标注，内心活动用"……"省略号渲染
 10. 当发生人生重大转折时（如第一份工作、恋爱、结婚、生子、升职、重大变故等），请在 milestone 字段标记
 11. 描述天气、环境、人物外貌和表情，让读者有画面感
+12. NPC之间也有关系：朋友可能暗中竞争，同事可能是情侣，家人之间可能有矛盾——在npc_bonds字段描述
+13. 当角色结婚生子时，在family_event字段返回家庭事件
+14. **时间跳跃**：根据玩家行动的语义决定time_skip月数。例如"读完大学"→48,"过完这个学期"→6,"出差一周"→1,"十年后"→120。叙事中要体现时间的流逝感
 
 ## 叙事风格
 - 运用五感描写（视觉、听觉、嗅觉、触觉、味觉）
@@ -219,8 +303,20 @@ export const useGameStore = defineStore('game', {
 
     buildTurnPrompt(playerAction, recentMemory, importantMemory) {
       const relInfo = this.relationships.length > 0
-        ? this.relationships.map(r => `${r.name}(${r.relation}, 好感度:${r.affection || 50})`).join('、')
+        ? this.relationships.map(r => {
+            const extras = []
+            if (r.personality) extras.push(`性格:${r.personality}`)
+            if (r.age) extras.push(`${r.age}岁`)
+            if (r.status) extras.push(r.status)
+            return `${r.name}(${r.relation}, 好感度:${r.affection || 50}${extras.length ? ', ' + extras.join(', ') : ''})`
+          }).join('、')
         : '暂无'
+      const bondsInfo = this.npcBonds.length > 0
+        ? this.npcBonds.map(b => `${b.from}↔${b.to}: ${b.type}${b.tension ? '(张力:' + b.tension + ')' : ''}`).join('、')
+        : '暂无'
+      const familyInfo = this.family
+        ? `配偶: ${this.family.spouse || '无'}, 子女: ${(this.family.children || []).map(c => `${c.name}(${c.age}岁)`).join('、') || '无'}`
+        : '暂无家庭'
       const milestoneList = this.milestones.length > 0
         ? this.milestones.map(m => `${m.icon} ${m.title}(${m.age}岁)`).join('、')
         : '暂无'
@@ -241,6 +337,8 @@ ${this.location ? `所在地：${this.location}` : ''}
 
 ## 当前情绪：${this.currentMood}
 ## 人际关系：${relInfo}
+## NPC之间的关系：${bondsInfo}
+## 家庭：${familyInfo}
 ## 已达成里程碑：${milestoneList}
 
 ## 近期经历
@@ -250,18 +348,22 @@ ${recentMemory || (this.age === 0 ? '一个新生命刚刚来到这个世界，�
 ${importantMemory || '尚无重要记忆'}
 
 ## 本回合
-${playerAction ? `玩家选择：${playerAction}` : '自动推进新的一个月'}
+${playerAction ? `玩家选择：${playerAction}\n\n⚠️ 时间跳跃指令：仔细分析玩家输入中是否隐含时间跨度。\n如果玩家提到了具体年龄（如"我X岁了""到X岁"），请设置 age_after 为该年龄。\n如果隐含时间跨度（如"读完大学""工作三年""长大成人"），请设置 age_after 为合理的目标年龄。\n当前角色 ${this.age} 岁，age_after 必须 >= ${this.age}。` : '自动推进（age_after设为null）'}
 
 请严格按以下JSON返回（不要添加任何JSON外的文字）：
 {
-  "title": "本月标题（2-6字）",
-  "narrative": "本月故事（200-500字，含对话、描写、情感）",
+  "title": "本回合标题（2-6字）",
+  "narrative": "本回合故事（200-500字，含对话、描写、情感）",
   "narrative_summary": "一句话摘要（15字内）",
+  "time_skip": 1,
+  "age_after": null,
   "scene_type": "场景类型（work/love/study/adventure/family/health/social/crisis/leisure/milestone）",
   "weather": "天气（晴/阴/雨/雪/风/雾 等，一个字）",
   "options": ["选项1", "选项2", "选项3"],
   "attribute_changes": {"health":0,"intelligence":0,"charisma":0,"wealth":0,"happiness":0,"social":0},
   "new_relationships": [],
+  "npc_bonds": [],
+  "family_event": null,
   "mood": "情绪（2-4字）",
   "importance": 5,
   "milestone": null,
@@ -269,11 +371,22 @@ ${playerAction ? `玩家选择：${playerAction}` : '自动推进新的一个月
   "location_update": null
 }
 
-new_relationships 格式：{"name":"姓名","relation":"关系","affection":50}
+new_relationships 格式：{"name":"姓名","relation":"关系","affection":50,"personality":"简短性格","age":25,"status":"当前状态"}
+npc_bonds 格式：[{"from":"NPC名","to":"NPC名","type":"关系描述(朋友/暗恋/对手/合作...)","tension":0}]  tension -5到5，正数=融洽，负数=紧张
+family_event 格式（仅发生家庭事件时）：{"type":"marry/child/divorce/death","target":"对象名","child_name":"孩子名(生子时)","child_gender":"男/女(生子时)"}
 milestone 格式（仅重大事件时填写，否则null）：{"title":"里程碑名","icon":"emoji","description":"一句话描述"}
 career_update：如果职业有变化，填新职业字符串，否则null
 location_update：如果地点有变化，填新地点，否则null
-importance：1-10整数`
+importance：1-10整数
+
+**【重要】时间跳跃相关字段：**
+age_after：本回合故事结束后角色应该是几岁（整数）。这是最重要的时间控制字段！
+  - 如果玩家说"我12岁了"或"到12岁"，age_after应该设为12
+  - 如果玩家说"读完大学"且当前18岁，age_after应该设为22
+  - 如果玩家说"三年后"且当前25岁，age_after应该设为28
+  - 如果是普通日常推进，age_after设为null（系统自动推进）
+  - age_after不能小于当前年龄
+time_skip：备用字段，推进月数（整数）。仅当age_after为null时生效。默认1`
     },
 
     async playTurn(playerAction = null) {
@@ -296,11 +409,58 @@ importance：1-10整数`
           for (const rel of result.new_relationships) {
             if (!rel.name) continue
             const existing = this.relationships.find(r => r.name === rel.name)
-            if (existing) Object.assign(existing, rel)
-            else {
-              this.relationships.push({ name: rel.name, relation: rel.relation || '认识的人', affection: rel.affection ?? 50 })
+            if (existing) {
+              Object.assign(existing, rel)
+            } else {
+              this.relationships.push({
+                name: rel.name,
+                relation: rel.relation || '认识的人',
+                affection: rel.affection ?? 50,
+                personality: rel.personality || '',
+                age: rel.age || null,
+                status: rel.status || '',
+              })
               this.lifeStats.npcMet++
             }
+          }
+        }
+
+        // NPC bonds (NPC之间的关系)
+        if (result.npc_bonds && Array.isArray(result.npc_bonds)) {
+          for (const bond of result.npc_bonds) {
+            if (!bond.from || !bond.to) continue
+            const existing = this.npcBonds.find(b =>
+              (b.from === bond.from && b.to === bond.to) || (b.from === bond.to && b.to === bond.from)
+            )
+            if (existing) Object.assign(existing, bond)
+            else this.npcBonds.push({ ...bond, tension: bond.tension || 0 })
+          }
+        }
+
+        // Family events (结婚/生子/离婚)
+        if (result.family_event && result.family_event.type) {
+          const fe = result.family_event
+          if (fe.type === 'marry' && fe.target) {
+            this.family.spouse = fe.target
+          } else if (fe.type === 'child' && fe.child_name) {
+            const childAttrs = this.generateChildAttributes()
+            this.family.children.push({
+              name: fe.child_name,
+              gender: fe.child_gender || '未知',
+              birthAge: this.age,
+              age: 0,
+              inheritedTraits: childAttrs.traits,
+              potential: childAttrs.potential,
+            })
+          } else if (fe.type === 'divorce') {
+            this.family.spouse = null
+          }
+        }
+
+        // Age up children each turn
+        if (this.family.children.length > 0) {
+          for (const child of this.family.children) {
+            child.age = this.age - child.birthAge
           }
         }
 
@@ -334,8 +494,21 @@ importance：1-10整数`
           weather: result.weather || ''
         })
 
+        // 智能时间跳跃：前端解析 + AI 返回取最优
+        let finalAgeAfter = null
+        const aiAge = (typeof result.age_after === 'number' && result.age_after > this.age) ? result.age_after : null
+
+        // 始终尝试前端解析玩家输入
+        const parsedAge = playerAction ? this.parseAgeFromInput(playerAction, this.age) : null
+
+        // 取两者中更大的那个（更尊重玩家意图）
+        if (aiAge && parsedAge) finalAgeAfter = Math.max(aiAge, parsedAge)
+        else finalAgeAfter = parsedAge || aiAge || null
+
+        console.log(`[时间跳跃] 当前:${this.age}岁 | AI返回:${result.age_after} | 前端解析:${parsedAge} | 最终目标:${finalAgeAfter}`)
+
         // Record snapshot & update stats
-        this.advanceTime()
+        this.advanceTime(result.time_skip, finalAgeAfter)
         this.recordSnapshot()
         this.updateLifeStats()
 
@@ -354,10 +527,11 @@ importance：1-10整数`
       const saveData = {
         character: this.character, attributes: this.attributes, world: this.world,
         age: this.age, month: this.month, totalMonths: this.totalMonths,
-        relationships: this.relationships, memories: this.memories, recentEvents: this.recentEvents,
+        relationships: this.relationships, npcBonds: this.npcBonds,
+        memories: this.memories, recentEvents: this.recentEvents,
         currentNarrative: this.currentNarrative, currentOptions: this.currentOptions,
         currentMood: this.currentMood, timeline: this.timeline, milestones: this.milestones,
-        career: this.career, location: this.location,
+        career: this.career, location: this.location, family: this.family,
         attributeHistory: this.attributeHistory, moodHistory: this.moodHistory, lifeStats: this.lifeStats,
         isPlaying: this.isPlaying, isGameOver: this.isGameOver, gameOverReason: this.gameOverReason,
         settings: this.settings,
